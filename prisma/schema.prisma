@@ -1,0 +1,28 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+
+model OrbcommDownloadMessages {
+  id Int @default(autoincrement()) @id
+  messageId String @unique
+  messageUTC DateTime
+  receiveUTC DateTime
+  deviceId   String
+  SIN Int
+  MIN Int
+  payload String @db.MediumText
+  regionName String
+  otaMessageSize Int
+  costumerID Int
+  transport Int
+  mobileOwnerID String
+}
