@@ -16,13 +16,32 @@ export class DownloadMessagesService {
     const link =
       'https://isatdatapro.orbcomm.com/GLGW/2/RestMessages.svc/JSON/get_return_messages/?access_id=70002657&password=ZFLLYNJL&include_raw_payload=true&start_utc=2022-06-07 22:13:23';
 
-    const apiResponse$ = this.http.get(link);
-
-    apiResponse$.subscribe({
-      next: (value) => {
-        this.createManyMessages(value.data);
+    this.http.get(link).subscribe({
+      next: (v) => {
+        const result = this.validateResponse(v.data);
+        this.createManyMessages(result);
+      },
+      error: (e) => {
+        console.log(e);
       },
     });
+
+    console.log();
+  }
+  validateResponse(data: ResponseDownloadMessage) {
+    if (!data.ErrorID) {
+      throw new Error();
+    }
+    if (data.ErrorID !== 0) {
+      throw new Error(
+        `ERROR IN REQUEST API ORBCOMM VERIFY THE ERROR ID: ${data.ErrorID}`,
+      );
+    }
+    if (data.ErrorID === 0 && !data.Messages.length) {
+      throw new Error(`THIS REQUEST NOT RETURN ANY MESSAGES`);
+    } else {
+      return data;
+    }
   }
 
   async createManyMessages(data: ResponseDownloadMessage) {
