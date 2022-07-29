@@ -26,3 +26,25 @@ model OrbcommDownloadMessages {
   transport Int
   mobileOwnerID String
 }
+
+model OrbcommDownloadParamControll {
+  id Int  @default(autoincrement()) @id
+  previousMessage String
+  nextMessage String
+  createdAt DateTime @default(now())
+}
+
+model OrbcomMobileVersion {
+  id Int @default(autoincrement()) @id
+  deviceId       String @unique
+  name String
+  SIN Int
+  MIN Int
+  fields Json
+  }
+
+  model OrbcommLogError{
+      id Int @default(autoincrement()) @id
+      description String @db.MediumText
+      createdAt DateTime @default(now())
+  }
