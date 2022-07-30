@@ -2,7 +2,10 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { PrismaService } from '../../../../prisma/prisma.service';
-import { ResponseDownloadMessage } from '../../interfaces/orbcomm-interfaces';
+import {
+  DownloadMessage,
+  ResponseDownloadMessage,
+} from '../../interfaces/orbcomm-interfaces';
 
 @Injectable()
 export class DownloadMessagesService {
@@ -12,25 +15,36 @@ export class DownloadMessagesService {
   async downloadMessages() {
     console.log('DOWNLOAD MESSAGES START...');
 
-    const params = { id: 0 };
-    const link =
-      'https://isatdatapro.orbcomm.com/GLGW/2/RestMessages.svc/JSON/get_return_messages/?access_id=70002657&password=ZFLLYNJL&include_raw_payload=true&start_utc=2022-06-07 22:13:23';
+    const link = process.env.ORBCOMM_DOWNLOAD_LINK;
 
-    this.http.get(link).subscribe({
-      next: (v) => {
-        const result = this.validateResponse(v.data);
-        this.createManyMessages(result);
-      },
-      error: (e) => {
-        console.log(e);
-      },
-    });
+    try {
+      const nextMessageParam = await this.findNextMessage();
 
-    console.log();
+      const httpResponse = await this.http.axiosRef
+        .get(link, {
+          params: { start_utc: nextMessageParam },
+        })
+        .then((res) => res.data)
+        .catch((e) => {
+          throw new Error(e.message);
+        });
+
+      const httpResponseValidated = this.validateResponse(httpResponse);
+
+      await this.createManyMessages(httpResponseValidated);
+      await this.upsertMobileVersion(httpResponseValidated);
+      await this.createNextUtcParam(
+        nextMessageParam,
+        httpResponseValidated.NextStartUTC,
+      );
+    } catch (error) {
+      console.log(error.message);
+    }
   }
+
   validateResponse(data: ResponseDownloadMessage) {
-    if (!data.ErrorID) {
-      throw new Error();
+    if (data.ErrorID === undefined) {
+      throw new Error(`VERIFY THE DOWNLOAD MESSAGES CALL`);
     }
     if (data.ErrorID !== 0) {
       throw new Error(
@@ -42,6 +56,15 @@ export class DownloadMessagesService {
     } else {
       return data;
     }
+  }
+
+  async createNextUtcParam(previousMessage: string, nextMessage: string) {
+    await this.prisma.orbcommDownloadParamControl.create({
+      data: {
+        previousMessage,
+        nextMessage,
+      },
+    });
   }
 
   async createManyMessages(data: ResponseDownloadMessage) {
@@ -65,5 +88,64 @@ export class DownloadMessagesService {
       data: mappedMessages,
       skipDuplicates: true,
     });
+  }
+
+  async upsertMobileVersion(data: ResponseDownloadMessage) {
+    const messagesWithPayload = this.formatPayload(data);
+
+    messagesWithPayload.map(async (message) => {
+      await this.prisma.orbcommMobileVersion.upsert({
+        create: {
+          deviceId: message.MobileID,
+          SIN: message.Payload.SIN,
+          MIN: message.Payload.MIN,
+          name: message.Payload.Name,
+          fields: message.Payload.Fields,
+        },
+        where: { deviceId: message.MobileID },
+        update: {
+          SIN: message.Payload.SIN,
+          MIN: message.Payload.MIN,
+          name: message.Payload.Name,
+          fields: message.Payload.Fields,
+        },
+      });
+    });
+  }
+
+  formatPayload(data: ResponseDownloadMessage): DownloadMessage[] {
+    const messagesWithPayload = data.Messages.filter(
+      (message) => message.Payload,
+    );
+
+    const uniqueIdList = [];
+
+    const uniqueList = messagesWithPayload.filter((element) => {
+      const isDuplicate = uniqueIdList.includes(element.MobileID);
+      if (!isDuplicate) {
+        uniqueIdList.push(element.MobileID);
+        return true;
+      }
+      return false;
+    });
+
+    return uniqueList;
+  }
+
+  async findNextMessage(): Promise<string> {
+    const lastMessage = await this.prisma.orbcommDownloadParamControl.findFirst(
+      {
+        select: { nextMessage: true },
+        orderBy: [{ id: 'desc' }],
+        take: 1,
+      },
+    );
+    if (!lastMessage) {
+      throw new Error(
+        'no param found in "orbcommDownloadParamControl" table pls verify',
+      );
+    } else {
+      return lastMessage.nextMessage;
+    }
   }
 }

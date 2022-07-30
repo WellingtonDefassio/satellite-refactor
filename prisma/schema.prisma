@@ -27,16 +27,16 @@ model OrbcommDownloadMessages {
   mobileOwnerID String
 }
 
-model OrbcommDownloadParamControll {
+model OrbcommDownloadParamControl {
   id Int  @default(autoincrement()) @id
   previousMessage String
   nextMessage String
   createdAt DateTime @default(now())
 }
 
-model OrbcomMobileVersion {
+model OrbcommMobileVersion {
   id Int @default(autoincrement()) @id
-  deviceId       String @unique
+  deviceId String @unique
   name String
   SIN Int
   MIN Int
