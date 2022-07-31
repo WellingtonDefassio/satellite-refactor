@@ -11,7 +11,7 @@ import {
 export class DownloadMessagesService {
   constructor(private prisma: PrismaService, private http: HttpService) {}
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  // @Cron(CronExpression.EVERY_10_SECONDS)
   async downloadMessages() {
     console.log('DOWNLOAD MESSAGES START...');
 
@@ -39,6 +39,9 @@ export class DownloadMessagesService {
       );
     } catch (error) {
       console.log(error.message);
+      await this.prisma.orbcommLogError.create({
+        data: { description: error.message },
+      });
     }
   }
 

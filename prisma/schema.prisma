@@ -10,41 +10,105 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model OrbcommDownloadMessages {
-  id Int @default(autoincrement()) @id
-  messageId String @unique
-  messageUTC DateTime
-  receiveUTC DateTime
-  deviceId   String
-  SIN Int
-  MIN Int
-  payload String @db.MediumText
-  regionName String
+  id             Int      @id @default(autoincrement())
+  messageId      String   @unique
+  messageUTC     DateTime
+  receiveUTC     DateTime
+  deviceId       String
+  SIN            Int
+  MIN            Int
+  payload        String   @db.MediumText
+  regionName     String
   otaMessageSize Int
-  costumerID Int
-  transport Int
-  mobileOwnerID String
+  costumerID     Int
+  transport      Int
+  mobileOwnerID  String
 }
 
 model OrbcommDownloadParamControl {
-  id Int  @default(autoincrement()) @id
+  id              Int      @id @default(autoincrement())
   previousMessage String
-  nextMessage String
-  createdAt DateTime @default(now())
+  nextMessage     String
+  createdAt       DateTime @default(now())
 }
 
 model OrbcommMobileVersion {
-  id Int @default(autoincrement()) @id
+  id       Int    @id @default(autoincrement())
   deviceId String @unique
-  name String
-  SIN Int
-  MIN Int
-  fields Json
-  }
+  name     String
+  SIN      Int
+  MIN      Int
+  fields   Json
+}
 
-  model OrbcommLogError{
-      id Int @default(autoincrement()) @id
-      description String @db.MediumText
-      createdAt DateTime @default(now())
-  }
+model OrbcommLogError {
+  id          Int      @id @default(autoincrement())
+  description String   @db.MediumText
+  createdAt   DateTime @default(now())
+}
+
+model SatelliteSendedMessages {
+  id       Int           @id @default(autoincrement())
+  payload  String        @db.MediumText
+  deviceId String
+  device   Devices       @relation(fields: [deviceId], references: [deviceId])
+  status   MessageStatus @default(CREATED)
+  orbcommMessage OrcommSendedMessages? 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+}
+
+model OrcommSendedMessages {
+  id                   Int                     @id @default(autoincrement())
+  satelliteMessageId   Int          @unique
+  satelliteSendMessage SatelliteSendedMessages @relation(fields: [satelliteMessageId], references: [id])
+  fwrdMessageId String
+  status        OrbcommMessageStatus
+
+  @@unique([id, satelliteMessageId])
+}
+
+model Devices {
+  id               Int                       @id @default(autoincrement())
+  deviceId         String                    @unique
+  gatewayId        Int
+  satelliteGateway SatelliteGateway          @relation(fields: [gatewayId], references: [id])
+  status           DeviceStatus
+  createdAt        DateTime                  @default(now())
+  updatedAt        DateTime                  @updatedAt
+  messages         SatelliteSendedMessages[]
+}
+
+model SatelliteGateway {
+  id      Int       @id @default(autoincrement())
+  name    String    @unique
+  devices Devices[]
+}
+
+enum MessageStatus {
+  CREATED
+  SUBMITTED
+  SENDED
+  TIMEOUT
+  FAILED
+  CANCELLED
+}
+
+enum DeviceStatus {
+  ACTIVE
+  DISABLED
+}
+
+enum OrbcommMessageStatus {
+  SUBMITTED
+  RECEIVED
+  ERROR
+  DELIVERY_FAILED
+  TIMEOUT
+  CANCELLED
+  WAITING
+  INVALID
+  TRANSMITTED
+}
