@@ -1,12 +1,10 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { MessageStatus, SatelliteSendedMessages } from '@prisma/client';
+import { SatelliteSendedMessages } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   MessageBodyPost,
-  OrbcommMessageStatus,
-  OrbcommStatusMap,
   SubmitResponse,
 } from '../../interfaces/orbcomm-interfaces';
 
@@ -105,24 +103,6 @@ export class SendMessagesService {
           },
         });
     });
-  }
-  convertMessageStatus(status: OrbcommMessageStatus): MessageStatus {
-    switch (status) {
-      case 'RECEIVED':
-      case 'TRANSMITTED':
-        return 'SENDED';
-      case 'SUBMITTED':
-      case 'WAITING':
-        return 'SUBMITTED';
-      case 'TIMEOUT':
-        return 'TIMEOUT';
-      case 'DELIVERY_FAILED':
-      case 'ERROR':
-      case 'INVALID':
-        return 'FAILED';
-      case 'CANCELLED':
-        return 'CANCELLED';
-    }
   }
 
   validateApiReturn(apiResponse: SubmitResponse) {
