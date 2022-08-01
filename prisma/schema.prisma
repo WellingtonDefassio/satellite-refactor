@@ -49,26 +49,52 @@ model OrbcommLogError {
 }
 
 model SatelliteSendedMessages {
-  id       Int           @id @default(autoincrement())
-  payload  String        @db.MediumText
-  deviceId String
-  device   Devices       @relation(fields: [deviceId], references: [deviceId])
-  status   MessageStatus @default(CREATED)
-  orbcommMessage OrcommSendedMessages? 
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id                     Int                      @id @default(autoincrement())
+  payload                String                   @db.MediumText
+  deviceId               String
+  device                 Devices                  @relation(fields: [deviceId], references: [deviceId])
+  status                 MessageStatus            @default(CREATED)
+  satelliteItensRegister SatelliteItensRegister[]
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
 
+  
 }
 
-model OrcommSendedMessages {
-  id                   Int                     @id @default(autoincrement())
-  satelliteMessageId   Int          @unique
-  satelliteSendMessage SatelliteSendedMessages @relation(fields: [satelliteMessageId], references: [id])
-  fwrdMessageId String
-  status        OrbcommMessageStatus
+model SatelliteItens {
+  id        Int              @id @default(autoincrement())
+  gatewayId Int
+  gateway   SatelliteGateway @relation(fields: [gatewayId], references: [id])
+  item      String           @unique
+  satelliteItensRegister SatelliteItensRegister[]
 
-  @@unique([id, satelliteMessageId])
+
+  @@unique([gatewayId, item])
 }
+
+model SatelliteItensRegister {
+  id                      Int                     @id @default(autoincrement())
+  satelliteMessageId      Int
+  satelliteSendedMessages SatelliteSendedMessages @relation(fields: [satelliteMessageId], references: [id])
+  satelliteItemId Int
+  satelliteItens SatelliteItens  @relation(fields: [satelliteItemId], references: [id])
+  value String
+
+  @@unique([satelliteItemId, satelliteMessageId, value])
+}
+
+enum OrbcommMessageStatus {
+  SUBMITTED
+  RECEIVED
+  ERROR
+  DELIVERY_FAILED
+  TIMEOUT
+  CANCELLED
+  WAITING
+  INVALID
+  TRANSMITTED
+}
+
 
 model Devices {
   id               Int                       @id @default(autoincrement())
@@ -82,9 +108,10 @@ model Devices {
 }
 
 model SatelliteGateway {
-  id      Int       @id @default(autoincrement())
-  name    String    @unique
-  devices Devices[]
+  id             Int              @id @default(autoincrement())
+  name           String           @unique
+  devices        Devices[]
+  satelliteItens SatelliteItens[]
 }
 
 enum MessageStatus {
@@ -101,14 +128,3 @@ enum DeviceStatus {
   DISABLED
 }
 
-enum OrbcommMessageStatus {
-  SUBMITTED
-  RECEIVED
-  ERROR
-  DELIVERY_FAILED
-  TIMEOUT
-  CANCELLED
-  WAITING
-  INVALID
-  TRANSMITTED
-}
