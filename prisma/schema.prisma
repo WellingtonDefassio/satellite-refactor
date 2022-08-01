@@ -44,6 +44,7 @@ model OrbcommMobileVersion {
 
 model OrbcommLogError {
   id          Int      @id @default(autoincrement())
+  service String
   description String   @db.MediumText
   createdAt   DateTime @default(now())
 }
@@ -76,11 +77,11 @@ model SatelliteItensRegister {
   id                      Int                     @id @default(autoincrement())
   satelliteMessageId      Int
   satelliteSendedMessages SatelliteSendedMessages @relation(fields: [satelliteMessageId], references: [id])
-  satelliteItemId Int
-  satelliteItens SatelliteItens  @relation(fields: [satelliteItemId], references: [id])
+  satelliteItemName String
+  satelliteItens SatelliteItens  @relation(fields: [satelliteItemName], references: [item])
   value String
 
-  @@unique([satelliteItemId, satelliteMessageId, value])
+  @@unique([satelliteItemName, value])
 }
 
 enum OrbcommMessageStatus {

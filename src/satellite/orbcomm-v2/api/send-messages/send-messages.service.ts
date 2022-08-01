@@ -3,53 +3,12 @@ import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { MessageStatus, SatelliteSendedMessages } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
-
-interface MessageBodyPost {
-  access_id: string;
-  password: string;
-  messages: MessagesPost[];
-}
-
-export enum OrbcommStatusMap {
-  SUBMITTED = 0,
-  RECEIVED = 1,
-  ERROR = 2,
-  DELIVERY_FAILED = 3,
-  TIMEOUT = 4,
-  CANCELLED = 5,
-  WAITING = 6,
-  INVALID = 7,
-  TRANSMITTED = 8,
-}
-
-enum OrbcommMessageStatus {
-  SUBMITTED = 'SUBMITTED',
-  RECEIVED = 'RECEIVED',
-  ERROR = 'ERROR',
-  DELIVERY_FAILED = 'DELIVERY_FAILED',
-  TIMEOUT = 'TIMEOUT',
-  CANCELLED = 'CANCELLED',
-  WAITING = 'WAITING',
-  INVALID = 'INVALID',
-  TRANSMITTED = 'TRANSMITTED',
-}
-
-interface MessagesPost {
-  DestinationID: string;
-  UserMessageID: number;
-  RawPayload: number[];
-}
-export interface SubmitResponse {
-  ErrorID: number;
-  Submissions: Submission[];
-}
-
-export interface Submission {
-  ForwardMessageID: number;
-  DestinationID: string;
-  ErrorID: number;
-  UserMessageID: number;
-}
+import {
+  MessageBodyPost,
+  OrbcommMessageStatus,
+  OrbcommStatusMap,
+  SubmitResponse,
+} from '../../interfaces/orbcomm-interfaces';
 
 @Injectable()
 export class SendMessagesService {
@@ -66,7 +25,7 @@ export class SendMessagesService {
       const formattedMessages = this.formatMessageToPost(messages);
 
       const apiResponse = await this.postApiOrbcomm(link, formattedMessages);
-      console.log(apiResponse);
+      this.validateApiReturn(apiResponse);
 
       await this.updateMessageStatus(apiResponse);
 
@@ -134,19 +93,17 @@ export class SendMessagesService {
       await this.prisma.satelliteItensRegister.create({
         data: {
           satelliteMessageId: message.UserMessageID,
-          satelliteItemId: 1,
           value: message.ForwardMessageID.toString(),
+          satelliteItemName: 'fwrdId',
         },
-      });
-      await this.prisma.satelliteItensRegister.create({
-        data: {
-          satelliteMessageId: message.UserMessageID,
-          satelliteItemId: 2,
-          value: this.convertMessageStatus(
-            OrbcommMessageStatus[OrbcommStatusMap[message.ErrorID]],
-          ),
-        },
-      });
+      }),
+        await this.prisma.satelliteItensRegister.create({
+          data: {
+            satelliteMessageId: message.UserMessageID,
+            satelliteItemName: 'statusOrbcomm',
+            value: 'SUBMITTED',
+          },
+        });
     });
   }
   convertMessageStatus(status: OrbcommMessageStatus): MessageStatus {
@@ -165,6 +122,14 @@ export class SendMessagesService {
         return 'FAILED';
       case 'CANCELLED':
         return 'CANCELLED';
+    }
+  }
+
+  validateApiReturn(apiResponse: SubmitResponse) {
+    if (apiResponse.ErrorID !== 0) {
+      throw new Error(
+        `error in post message api error id ${apiResponse.ErrorID}`,
+      );
     }
   }
 }
