@@ -13,7 +13,7 @@ import {
 export class SendMessagesService {
   constructor(private prisma: PrismaService, private http: HttpService) {}
 
-  @Cron(CronExpression.EVERY_10_SECONDS)
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async sendMessage() {
     try {
       console.log('SEND MESSAGE SERVICE START...');
@@ -26,9 +26,11 @@ export class SendMessagesService {
       const apiResponse = await this.postApiOrbcomm(link, formattedMessages);
       const validatedResponse = this.validateApiReturn(apiResponse);
 
-      await this.updateMessageStatus(validatedResponse);
+      const created = await this.updateMessageStatus(validatedResponse);
 
       console.log(apiResponse);
+      console.log(validatedResponse);
+      console.log(created);
     } catch (error) {
       console.log(error.message);
     }
@@ -84,8 +86,8 @@ export class SendMessagesService {
   }
 
   async updateMessageStatus(submissions: Submission[]) {
-    submissions.map(async (message) => {
-      await this.prisma.satelliteSendedMessages.update({
+    return submissions.map(async (message) => {
+      return await this.prisma.satelliteSendedMessages.update({
         where: { id: message.UserMessageID },
         data: {
           status: 'SUBMITTED',
@@ -113,7 +115,7 @@ export class SendMessagesService {
       );
     }
     const apiValidatedResponse = apiResponse.Submissions.filter(
-      (message) => message.ErrorID === 0,
+      (message) => !message.ErrorID,
     );
     return apiValidatedResponse;
   }

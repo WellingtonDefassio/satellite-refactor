@@ -72,3 +72,39 @@ export interface Submission {
   ErrorID: number;
   UserMessageID: number;
 }
+
+export interface FwrdIdInterface {
+  id: number;
+  fwrdIdValue: string;
+}
+
+export interface MessageBodyCheck {
+  access_id: string;
+  password: string;
+  fwIDs: string;
+}
+
+export interface ForwardStatuses {
+  ErrorID: number;
+  Statuses: StatusesType[];
+}
+
+export interface StatusesType {
+  ForwardMessageID: number;
+  IsClosed: boolean;
+  State: number;
+  StateUTC: string;
+  ReferenceNumber: number;
+  Transport: string;
+  RegionName: string;
+}
+export interface StatusesTypeWithId {
+  ForwardMessageID: number;
+  IsClosed: boolean;
+  State: number;
+  StateUTC: string;
+  ReferenceNumber: number;
+  Transport: string;
+  RegionName: string;
+  id: number;
+}
