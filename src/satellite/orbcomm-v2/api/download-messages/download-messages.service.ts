@@ -39,9 +39,6 @@ export class DownloadMessagesService {
       );
     } catch (error) {
       console.log(error.message);
-      await this.prisma.orbcommLogError.create({
-        data: { description: error.message },
-      });
     }
   }
 

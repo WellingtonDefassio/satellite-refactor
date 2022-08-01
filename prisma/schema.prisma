@@ -55,33 +55,33 @@ model SatelliteSendedMessages {
   deviceId               String
   device                 Devices                  @relation(fields: [deviceId], references: [deviceId])
   status                 MessageStatus            @default(CREATED)
-  satelliteItensRegister SatelliteItensRegister[]
+  satelliteValue SatelliteValue[]
   createdAt              DateTime                 @default(now())
   updatedAt              DateTime                 @updatedAt
 
   
 }
 
-model SatelliteItens {
+model SatelliteAttribute {
   id        Int              @id @default(autoincrement())
   gatewayId Int
   gateway   SatelliteGateway @relation(fields: [gatewayId], references: [id])
   item      String           @unique
-  satelliteItensRegister SatelliteItensRegister[]
+  satelliteValue SatelliteValue[]
 
 
   @@unique([gatewayId, item])
 }
 
-model SatelliteItensRegister {
+model SatelliteValue {
   id                      Int                     @id @default(autoincrement())
   satelliteMessageId      Int
   satelliteSendedMessages SatelliteSendedMessages @relation(fields: [satelliteMessageId], references: [id])
   satelliteItemName String
-  satelliteItens SatelliteItens  @relation(fields: [satelliteItemName], references: [item])
+  satelliteAttribute SatelliteAttribute  @relation(fields: [satelliteItemName], references: [item])
   value String
 
-  @@unique([satelliteItemName, value])
+  @@unique([satelliteMessageId, satelliteItemName])
 }
 
 enum OrbcommMessageStatus {
@@ -112,7 +112,7 @@ model SatelliteGateway {
   id             Int              @id @default(autoincrement())
   name           String           @unique
   devices        Devices[]
-  satelliteItens SatelliteItens[]
+  satelliteItens SatelliteAttribute[]
 }
 
 enum MessageStatus {

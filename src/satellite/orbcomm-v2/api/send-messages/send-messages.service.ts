@@ -5,6 +5,7 @@ import { SatelliteSendedMessages } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   MessageBodyPost,
+  Submission,
   SubmitResponse,
 } from '../../interfaces/orbcomm-interfaces';
 
@@ -23,9 +24,9 @@ export class SendMessagesService {
       const formattedMessages = this.formatMessageToPost(messages);
 
       const apiResponse = await this.postApiOrbcomm(link, formattedMessages);
-      this.validateApiReturn(apiResponse);
+      const validatedResponse = this.validateApiReturn(apiResponse);
 
-      await this.updateMessageStatus(apiResponse);
+      await this.updateMessageStatus(validatedResponse);
 
       console.log(apiResponse);
     } catch (error) {
@@ -82,26 +83,26 @@ export class SendMessagesService {
       });
   }
 
-  async updateMessageStatus(apiResponse: SubmitResponse) {
-    apiResponse.Submissions.map(async (message) => {
+  async updateMessageStatus(submissions: Submission[]) {
+    submissions.map(async (message) => {
       await this.prisma.satelliteSendedMessages.update({
         where: { id: message.UserMessageID },
-        data: { status: 'SUBMITTED' },
-      });
-      await this.prisma.satelliteItensRegister.create({
         data: {
-          satelliteMessageId: message.UserMessageID,
-          value: message.ForwardMessageID.toString(),
-          satelliteItemName: 'fwrdId',
-        },
-      }),
-        await this.prisma.satelliteItensRegister.create({
-          data: {
-            satelliteMessageId: message.UserMessageID,
-            satelliteItemName: 'statusOrbcomm',
-            value: 'SUBMITTED',
+          status: 'SUBMITTED',
+          satelliteValue: {
+            create: [
+              {
+                satelliteItemName: 'fwrdId',
+                value: message.ForwardMessageID.toString(),
+              },
+              {
+                satelliteItemName: 'statusOrbcomm',
+                value: 'SUBMITTED',
+              },
+            ],
           },
-        });
+        },
+      });
     });
   }
 
@@ -111,5 +112,9 @@ export class SendMessagesService {
         `error in post message api error id ${apiResponse.ErrorID}`,
       );
     }
+    const apiValidatedResponse = apiResponse.Submissions.filter(
+      (message) => message.ErrorID === 0,
+    );
+    return apiValidatedResponse;
   }
 }
