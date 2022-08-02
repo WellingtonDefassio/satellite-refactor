@@ -43,7 +43,7 @@ export class DownloadMessagesService {
   }
 
   validateResponse(data: ResponseDownloadMessage) {
-    if (data.ErrorID === undefined) {
+    if (data.ErrorID === undefined || data.ErrorID === null) {
       throw new Error(`VERIFY THE DOWNLOAD MESSAGES CALL`);
     }
     if (data.ErrorID !== 0) {

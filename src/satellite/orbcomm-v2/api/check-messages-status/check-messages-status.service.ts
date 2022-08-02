@@ -87,6 +87,10 @@ export class CheckMessagesStatusService {
   }
 
   formatDataToApi(formattedData: FwrdIdInterface[]) {
+    if (!formattedData.length) {
+      throw new Error('no check messages to send!');
+    }
+
     const fwIDs = formattedData.map((message) => message.fwrdIdValue);
 
     const messageBodyCheck: MessageBodyCheck = {
