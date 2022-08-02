@@ -33,6 +33,9 @@ export class SendMessagesService {
       console.log(created);
     } catch (error) {
       console.log(error.message);
+      await this.prisma.orbcommLogError.create({
+        data: { service: 'SEND_MESSAGE', description: error.message },
+      });
     }
   }
 
@@ -117,6 +120,12 @@ export class SendMessagesService {
     const apiValidatedResponse = apiResponse.Submissions.filter(
       (message) => !message.ErrorID,
     );
+
+    if (!apiValidatedResponse.length) {
+      throw new Error(
+        'message not accept for the api satellite, will try again son',
+      );
+    }
     return apiValidatedResponse;
   }
 }

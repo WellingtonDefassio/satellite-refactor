@@ -11,7 +11,7 @@ import {
 export class DownloadMessagesService {
   constructor(private prisma: PrismaService, private http: HttpService) {}
 
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async downloadMessages() {
     console.log('DOWNLOAD MESSAGES START...');
 
@@ -39,6 +39,9 @@ export class DownloadMessagesService {
       );
     } catch (error) {
       console.log(error.message);
+      await this.prisma.orbcommLogError.create({
+        data: { service: 'DOWNLOAD_MESSAGE', description: error.message },
+      });
     }
   }
 
@@ -51,7 +54,7 @@ export class DownloadMessagesService {
         `ERROR IN REQUEST API ORBCOMM VERIFY THE ERROR ID: ${data.ErrorID}`,
       );
     }
-    if (data.ErrorID === 0 && !data.Messages.length) {
+    if (data.ErrorID === 0 && data.Messages === null) {
       throw new Error(`THIS REQUEST NOT RETURN ANY MESSAGES`);
     } else {
       return data;

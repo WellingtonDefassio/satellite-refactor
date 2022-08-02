@@ -16,7 +16,7 @@ import {
 export class CheckMessagesStatusService {
   constructor(private prisma: PrismaService, private http: HttpService) {}
 
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async checkMessagesStatus() {
     try {
       console.log('START CHECK SERVICE');
@@ -31,12 +31,14 @@ export class CheckMessagesStatusService {
 
       const fetchResponseId = this.addIdInResponse(apiResponse, formattedData);
 
-      const updatedMessages = await this.updateMessagesStatus(fetchResponseId);
+      await this.updateMessagesStatus(fetchResponseId);
 
       console.log(fetchResponseId);
-      console.log(updatedMessages);
     } catch (error) {
       console.log(error.message);
+      await this.prisma.orbcommLogError.create({
+        data: { service: 'CHECK_MESSAGE', description: error.message },
+      });
     }
   }
 

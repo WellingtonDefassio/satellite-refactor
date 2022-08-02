@@ -14,4 +14,8 @@ export class SatelliteService {
       },
     });
   }
+
+  async downloadMessagesAll() {
+    return await this.prisma.orbcommDownloadMessages.findMany();
+  }
 }
