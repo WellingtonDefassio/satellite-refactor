@@ -169,8 +169,8 @@ export class CheckMessagesStatusService {
     }
   }
   validateResponse(apiResponse: ForwardStatuses): void {
-    if (!apiResponse.ErrorID) {
-      throw new Error('REQUEST FOR FOR CHECK FAIL!');
+    if (apiResponse.ErrorID === undefined) {
+      throw new Error('REQUEST FOR CHECK FAIL!');
     }
     if (apiResponse.ErrorID !== 0) {
       throw new Error(`UPDATE REQUEST FAIL IN ERROR ID ${apiResponse.ErrorID}`);

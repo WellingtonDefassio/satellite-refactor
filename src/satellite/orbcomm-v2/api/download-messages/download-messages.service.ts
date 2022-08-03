@@ -29,13 +29,13 @@ export class DownloadMessagesService {
           throw new Error(e.message);
         });
 
-      const httpResponseValidated = this.validateResponse(httpResponse);
+      this.validateResponse(httpResponse);
 
-      await this.createManyMessages(httpResponseValidated);
-      await this.upsertMobileVersion(httpResponseValidated);
+      await this.createManyMessages(httpResponse);
+      await this.upsertMobileVersion(httpResponse);
       await this.createNextUtcParam(
         nextMessageParam,
-        httpResponseValidated.NextStartUTC,
+        httpResponse.NextStartUTC,
       );
     } catch (error) {
       console.log(error.message);
@@ -45,9 +45,9 @@ export class DownloadMessagesService {
     }
   }
 
-  validateResponse(data: ResponseDownloadMessage) {
+  validateResponse(data: ResponseDownloadMessage): void {
     if (data.ErrorID === undefined || data.ErrorID === null) {
-      throw new Error(`VERIFY THE DOWNLOAD MESSAGES CALL`);
+      throw new Error('VERIFY THE DOWNLOAD MESSAGES CALL');
     }
     if (data.ErrorID !== 0) {
       throw new Error(
@@ -55,13 +55,14 @@ export class DownloadMessagesService {
       );
     }
     if (data.ErrorID === 0 && data.Messages === null) {
-      throw new Error(`THIS REQUEST NOT RETURN ANY MESSAGES`);
-    } else {
-      return data;
+      throw new Error('THIS REQUEST NOT RETURN ANY MESSAGES');
     }
   }
 
-  async createNextUtcParam(previousMessage: string, nextMessage: string) {
+  async createNextUtcParam(
+    previousMessage: string,
+    nextMessage: string,
+  ): Promise<void> {
     await this.prisma.orbcommDownloadParamControl.create({
       data: {
         previousMessage,
@@ -70,7 +71,7 @@ export class DownloadMessagesService {
     });
   }
 
-  async createManyMessages(data: ResponseDownloadMessage) {
+  async createManyMessages(data: ResponseDownloadMessage): Promise<void> {
     const mappedMessages = data.Messages.map((message) => {
       return {
         messageId: message.ID.toString(),
@@ -87,13 +88,13 @@ export class DownloadMessagesService {
         mobileOwnerID: message.MobileOwnerID.toString(),
       };
     });
-    return await this.prisma.orbcommDownloadMessages.createMany({
+    await this.prisma.orbcommDownloadMessages.createMany({
       data: mappedMessages,
       skipDuplicates: true,
     });
   }
 
-  async upsertMobileVersion(data: ResponseDownloadMessage) {
+  async upsertMobileVersion(data: ResponseDownloadMessage): Promise<void> {
     const messagesWithPayload = this.formatPayload(data);
 
     messagesWithPayload.map(async (message) => {
@@ -145,7 +146,7 @@ export class DownloadMessagesService {
     );
     if (!lastMessage) {
       throw new Error(
-        'no param found in "orbcommDownloadParamControl" table pls verify',
+        'NO PARAM FOUND IN "orbcommDownloadParamControl" TABLE, PLS VERIFY',
       );
     } else {
       return lastMessage.nextMessage;

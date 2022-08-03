@@ -28,8 +28,6 @@ export class SendMessagesService {
 
       const created = await this.updateMessageStatus(validatedResponse);
 
-      console.log(apiResponse);
-      console.log(validatedResponse);
       console.log(created);
     } catch (error) {
       console.log(error.message);
@@ -52,11 +50,13 @@ export class SendMessagesService {
         },
       });
     if (!listOfCreatedOrbcomm.length) {
-      throw new Error('no more messages to send!');
+      throw new Error('NO MORE MESSAGES TO SEND');
     } else return listOfCreatedOrbcomm;
   }
 
-  formatMessageToPost(messagesCreated: SatelliteSendedMessages[]) {
+  formatMessageToPost(
+    messagesCreated: SatelliteSendedMessages[],
+  ): MessageBodyPost {
     const messageBodyPost: MessageBodyPost = {
       access_id: '70002657',
       password: 'ZFLLYNJL',
@@ -70,8 +70,6 @@ export class SendMessagesService {
         RawPayload: this.hexToBuffer(message.payload),
       }),
     );
-
-    console.log(messageBodyPost);
     return messageBodyPost;
   }
   hexToBuffer(payload: string) {
@@ -79,7 +77,10 @@ export class SendMessagesService {
     return [...result];
   }
 
-  async postApiOrbcomm(link: string, formattedMessages: MessageBodyPost) {
+  async postApiOrbcomm(
+    link: string,
+    formattedMessages: MessageBodyPost,
+  ): Promise<SubmitResponse> {
     return await this.http.axiosRef
       .post(link, formattedMessages)
       .then((res) => res.data)
@@ -111,10 +112,10 @@ export class SendMessagesService {
     });
   }
 
-  validateApiReturn(apiResponse: SubmitResponse) {
+  validateApiReturn(apiResponse: SubmitResponse): Submission[] {
     if (apiResponse.ErrorID !== 0) {
       throw new Error(
-        `error in post message api error id ${apiResponse.ErrorID}`,
+        `ERROR IN POST MESSAGE API ERROR ID ${apiResponse.ErrorID}`,
       );
     }
     const apiValidatedResponse = apiResponse.Submissions.filter(
@@ -123,7 +124,7 @@ export class SendMessagesService {
 
     if (!apiValidatedResponse.length) {
       throw new Error(
-        'message not accept for the api satellite, will try again son',
+        'MESSAGE NOT ACCEPT FOR THE API SATELLITE, WILL TRY AGAIN SON',
       );
     }
     return apiValidatedResponse;
