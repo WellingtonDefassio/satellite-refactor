@@ -4,19 +4,21 @@ import { Cron, CronExpression } from '@nestjs/schedule';
 import { MessageStatus, SatelliteValue } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
+  BodyCheckApi,
   ForwardStatuses,
   FwrdIdInterface,
   MessageBodyCheck,
   OrbcommMessageStatus,
   OrbcommStatusMap,
   StatusesTypeWithId,
+  SubmittedMessages,
 } from '../../interfaces/orbcomm-interfaces';
 
 @Injectable()
 export class CheckMessagesStatusService {
   constructor(private prisma: PrismaService, private http: HttpService) {}
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_30_SECONDS)
   async checkMessagesStatus() {
     try {
       console.log('START CHECK SERVICE');
@@ -28,6 +30,8 @@ export class CheckMessagesStatusService {
       const messagesToSend = this.formatDataToApi(formattedData);
 
       const apiResponse = await this.getApiOrbcomm(link, messagesToSend);
+
+      this.validateResponse(apiResponse);
 
       const fetchResponseId = this.addIdInResponse(apiResponse, formattedData);
 
@@ -45,7 +49,7 @@ export class CheckMessagesStatusService {
   addIdInResponse(
     apiResponse: ForwardStatuses,
     formattedData: FwrdIdInterface[],
-  ) {
+  ): StatusesTypeWithId[] {
     return formattedData.map((value) => {
       const findResponse = apiResponse.Statuses.find(
         (response) =>
@@ -56,7 +60,7 @@ export class CheckMessagesStatusService {
     });
   }
 
-  async messagesToUpdateStatus() {
+  async messagesToUpdateStatus(): Promise<SubmittedMessages[]> {
     return await this.prisma.satelliteSendedMessages.findMany({
       where: {
         status: 'SUBMITTED',
@@ -88,7 +92,7 @@ export class CheckMessagesStatusService {
     });
   }
 
-  formatDataToApi(formattedData: FwrdIdInterface[]) {
+  formatDataToApi(formattedData: FwrdIdInterface[]): BodyCheckApi {
     if (!formattedData.length) {
       throw new Error('no check messages to send!');
     }
@@ -103,7 +107,10 @@ export class CheckMessagesStatusService {
 
     return messageBodyCheck;
   }
-  async getApiOrbcomm(link: string, body: MessageBodyCheck) {
+  async getApiOrbcomm(
+    link: string,
+    body: MessageBodyCheck,
+  ): Promise<ForwardStatuses> {
     return await this.http.axiosRef
       .get(link, { params: body })
       .then((res) => res.data)
@@ -112,10 +119,12 @@ export class CheckMessagesStatusService {
       });
   }
 
-  async updateMessagesStatus(fetchResponseId: StatusesTypeWithId[]) {
-    return fetchResponseId.forEach(async (response) => {
+  async updateMessagesStatus(
+    fetchResponseId: StatusesTypeWithId[],
+  ): Promise<void> {
+    fetchResponseId.forEach(async (response) => {
       if (response.State !== 0) {
-        return await this.prisma.satelliteSendedMessages.update({
+        await this.prisma.satelliteSendedMessages.update({
           where: { id: response.id },
           data: {
             status: {
@@ -157,6 +166,14 @@ export class CheckMessagesStatusService {
         return 'FAILED';
       case 'CANCELLED':
         return 'CANCELLED';
+    }
+  }
+  validateResponse(apiResponse: ForwardStatuses): void {
+    if (!apiResponse.ErrorID) {
+      throw new Error('REQUEST FOR FOR CHECK FAIL!');
+    }
+    if (apiResponse.ErrorID !== 0) {
+      throw new Error(`UPDATE REQUEST FAIL IN ERROR ID ${apiResponse.ErrorID}`);
     }
   }
 }

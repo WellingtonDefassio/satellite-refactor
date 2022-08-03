@@ -1,3 +1,5 @@
+import { SatelliteValue } from '@prisma/client';
+
 export interface ResponseDownloadMessage {
   ErrorID: number;
   NextStartUTC: string;
@@ -107,4 +109,15 @@ export interface StatusesTypeWithId {
   Transport: string;
   RegionName: string;
   id: number;
+}
+
+export interface SubmittedMessages {
+  id: number;
+  satelliteValue: SatelliteValue[];
+}
+
+export interface BodyCheckApi {
+  access_id: string;
+  password: string;
+  fwIDs: string;
 }
