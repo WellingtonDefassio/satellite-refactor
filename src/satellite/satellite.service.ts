@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { ArgumentOutOfRangeError, filter } from 'rxjs';
 import { SendMessageDto } from '../dtos/satellite.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { QueryDownloadParamsDto } from './dtos/download-messages.query';
 
 @Injectable()
 export class SatelliteService {
@@ -16,28 +17,16 @@ export class SatelliteService {
     });
   }
 
-  async downloadMessagesAll(body: Body) {
-    //TODO implementar um decorator que transforma em int e valida o maxSize
-    const maxResponsePag = 20;
-
-    const where = body.where.deviceId;
-    const take = body.take ? body.take : 5;
-    const skip = body.skip * take ? body.skip : 0;
-
-    console.log(body);
+  async downloadMessagesAll(param: QueryDownloadParamsDto) {
+    const { limit, device, startDate, mobileId } = param;
 
     return await this.prisma.orbcommDownloadMessages.findMany({
-      where: { deviceId: where },
-      take,
-      skip,
+      take: limit,
+      where: {
+        deviceId: device,
+        messageUTC: { gte: startDate },
+        mobileOwnerID: mobileId,
+      },
     });
   }
-}
-
-interface Body {
-  where?: {
-    deviceId: string;
-  };
-  take?: number;
-  skip?: number;
 }

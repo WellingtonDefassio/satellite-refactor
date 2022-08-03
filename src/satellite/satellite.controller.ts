@@ -6,10 +6,13 @@ import {
   Post,
   Query,
   UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
-import { take } from 'rxjs';
+import { Serialize } from 'src/interceptors/serialize.interceptor';
 import { SendMessageDto } from '../dtos/satellite.dto';
 import { FetchDevice } from '../pipes/transform-device.pipe';
+import { DownloadDto } from './dtos/download-messages.dto';
+import { QueryDownloadParamsDto } from './dtos/download-messages.query';
 import { SatelliteService } from './satellite.service';
 
 @Controller('satellite')
@@ -26,23 +29,15 @@ export class SatelliteController {
       throw Error(error.message);
     }
   }
-
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  @Serialize(DownloadDto)
   @Get('download-message')
   async getDownloadMessages(
-    @Query('device') deviceId?: string,
-    @Query('take') take?: string,
-    @Query('index') index?: string,
+    @Query()
+    params: QueryDownloadParamsDto,
   ) {
     try {
-      const body = {
-        where: {
-          deviceId,
-        },
-        ...(take && { take: parseInt(take) }),
-        ...(index && { skip: parseInt(index) * parseInt(take) }),
-      };
-
-      return await this.satelliteService.downloadMessagesAll(body);
+      return await this.satelliteService.downloadMessagesAll(params);
     } catch (error) {
       console.log(error.message);
     }
