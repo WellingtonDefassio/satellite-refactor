@@ -1,4 +1,13 @@
-import { Body, Controller, Get, Post, UsePipes } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  Get,
+  ParseIntPipe,
+  Post,
+  Query,
+  UsePipes,
+} from '@nestjs/common';
+import { take } from 'rxjs';
 import { SendMessageDto } from '../dtos/satellite.dto';
 import { FetchDevice } from '../pipes/transform-device.pipe';
 import { SatelliteService } from './satellite.service';
@@ -19,9 +28,23 @@ export class SatelliteController {
   }
 
   @Get('download-message')
-  async downloadMessages() {
+  async getDownloadMessages(
+    @Query('device') deviceId?: string,
+    @Query('take') take?: string,
+    @Query('index') index?: string,
+  ) {
     try {
-      return await this.satelliteService.downloadMessagesAll();
-    } catch (error) {}
+      const body = {
+        where: {
+          deviceId,
+        },
+        ...(take && { take: parseInt(take) }),
+        ...(index && { skip: parseInt(index) * parseInt(take) }),
+      };
+
+      return await this.satelliteService.downloadMessagesAll(body);
+    } catch (error) {
+      console.log(error.message);
+    }
   }
 }
