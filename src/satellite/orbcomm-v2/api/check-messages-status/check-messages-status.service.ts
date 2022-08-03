@@ -77,7 +77,7 @@ export class CheckMessagesStatusService {
     }[],
   ): FwrdIdInterface[] {
     if (!messagesToCheck.length) {
-      throw new Error('no more messages to update');
+      throw new Error('NO MORE MESSAGES TO UPDATE');
     }
 
     return messagesToCheck.map((message) => {
@@ -94,7 +94,7 @@ export class CheckMessagesStatusService {
 
   formatDataToApi(formattedData: FwrdIdInterface[]): BodyCheckApi {
     if (!formattedData.length) {
-      throw new Error('no check messages to send!');
+      throw new Error('NO CHECK MESSAGES TO SEND!');
     }
 
     const fwIDs = formattedData.map((message) => message.fwrdIdValue);
