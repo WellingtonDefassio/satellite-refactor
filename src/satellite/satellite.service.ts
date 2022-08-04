@@ -21,21 +21,25 @@ export class SatelliteService {
   async downloadMessagesAll(param: QueryDownloadParamsDto) {
     const { limit, device, startDate, mobileId } = param;
 
-    const downloadMessagesList =
-      await this.prisma.orbcommDownloadMessages.findMany({
-        where: {
-          deviceId: device,
-          messageUTC: { gte: startDate },
-          mobileOwnerID: mobileId,
-        },
-        take: limit,
-      });
+    const data = await this.prisma.orbcommDownloadMessages.findMany({
+      where: {
+        deviceId: device,
+        messageUTC: { gt: startDate },
+        mobileOwnerID: mobileId,
+      },
+      take: limit,
+    });
 
-    if (!downloadMessagesList.length) {
-      return downloadMessagesList;
+    const nextDate = this.nextMessageToFind(data);
+
+    if (!data.length) {
+      return data;
       //TODO tratar o retorno de resultados vazios
     }
-    return downloadMessagesList;
+    return {
+      nextDate,
+      data,
+    };
   }
 
   nextMessageToFind(downloadMessagesList: OrbcommDownloadMessages[]) {
@@ -48,8 +52,7 @@ export class SatelliteService {
 
     console.log(lastRegister);
     const { messageUTC } = lastRegister;
-    const date = messageUTC.setSeconds(messageUTC.getSeconds() + 1);
 
-    console.log(new Date(date));
+    return messageUTC;
   }
 }

@@ -5,9 +5,11 @@ import {
   ParseIntPipe,
   Post,
   Query,
+  UseInterceptors,
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
+import { DownloadResponseInterceptor } from 'src/interceptors/download-response.interceptor';
 import { Serialize } from 'src/interceptors/serialize.interceptor';
 import { SendMessageDto } from '../dtos/satellite.dto';
 import { FetchDevice } from '../pipes/transform-device.pipe';
@@ -29,8 +31,9 @@ export class SatelliteController {
       throw Error(error.message);
     }
   }
+
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-  @Serialize(DownloadDto)
+  @UseInterceptors(DownloadResponseInterceptor)
   @Get('download-message')
   async getDownloadMessages(
     @Query()

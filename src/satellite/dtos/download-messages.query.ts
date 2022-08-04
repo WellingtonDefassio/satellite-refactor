@@ -19,12 +19,13 @@ export class QueryDownloadParamsDto {
   @IsOptional()
   @Transform((param) => {
     const lastDate = maxDays();
-    const dateParam = new Date(param.value);
-    console.log(param.value);
+    const dateUTC = param.value.endsWith('Z') ? param.value : param.value + 'Z';
+    const dateParam = new Date(dateUTC);
+
     if (lastDate > dateParam || param.value === undefined) {
       return lastDate;
     }
-    return new Date(param.value);
+    return dateParam;
   })
   startDate: Date = maxDays();
 
@@ -34,6 +35,6 @@ export class QueryDownloadParamsDto {
 }
 
 function maxDays() {
-  const maxDays = 3;
+  const maxDays = 10;
   return new Date(new Date().setDate(new Date().getDate() - maxDays));
 }
