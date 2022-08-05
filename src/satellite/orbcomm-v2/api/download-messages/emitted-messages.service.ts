@@ -8,10 +8,10 @@ import {
 } from '../../interfaces/orbcomm-interfaces';
 
 @Injectable()
-export class DownloadMessagesService {
+export class EmittedMessagesServices {
   constructor(private prisma: PrismaService, private http: HttpService) {}
 
-  // @Cron(CronExpression.EVERY_5_MINUTES)
+  // @Cron(CronExpression.EVERY_30_SECONDS)
   async downloadMessages() {
     console.log('DOWNLOAD MESSAGES START...');
 
@@ -77,7 +77,7 @@ export class DownloadMessagesService {
         data: {
           payload: Buffer.of(...message.RawPayload).toString('hex'),
           device: message.MobileID,
-          size: message.OTAMessageSize,
+          messageSize: message.OTAMessageSize,
           dateUtc: new Date(message.MessageUTC + 'Z'),
           satelliteSpecificValues: {
             create: [

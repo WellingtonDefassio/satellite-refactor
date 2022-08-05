@@ -19,19 +19,21 @@ export class SatelliteService {
   }
 
   async downloadMessagesAll(param: QueryDownloadParamsDto) {
-    // const { limit, device, startDate, mobileId } = param;
-    // const datas = await this.prisma.satelliteEmittedMessages.findMany({
-    //   where: {},
-    //   take: limit,
-    // });
+    const { limit, device, startDate, mobileId } = param;
+    const datas = await this.prisma.satelliteEmittedMessages.findMany({
+      where: { device, dateUtc: { gt: startDate } },
+      take: limit,
+    });
     // const nextDate = this.nextMessageToFind(datas);
-    // if (!datas.length) {
-    //   return datas;
-    //   //TODO tratar o retorno de resultados vazios
-    // }
-    // return datas.map((data) => {
-    //   return new DownloadResponseDto(data);
-    // });
+
+    if (!datas.length) {
+      return datas;
+      //TODO tratar o retorno de resultados vazios
+    }
+
+    return datas.map((data) => {
+      return new DownloadResponseDto(data);
+    });
   }
 
   nextMessageToFind(downloadMessagesList) {

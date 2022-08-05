@@ -58,7 +58,7 @@ CREATE TABLE `SatelliteSendedSpecificValues` (
 -- CreateTable
 CREATE TABLE `SatelliteEmittedMessages` (
     `id` INTEGER NOT NULL AUTO_INCREMENT,
-    `payload` VARCHAR(191) NOT NULL,
+    `payload` MEDIUMTEXT NOT NULL,
     `device` VARCHAR(191) NOT NULL,
     `size` INTEGER NOT NULL,
     `dateUtc` DATETIME(3) NOT NULL,
