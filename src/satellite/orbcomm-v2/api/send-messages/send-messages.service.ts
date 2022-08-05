@@ -13,7 +13,7 @@ import {
 export class SendMessagesService {
   constructor(private prisma: PrismaService, private http: HttpService) {}
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  // @Cron(CronExpression.EVERY_5_MINUTES)
   async sendMessage() {
     try {
       console.log('SEND MESSAGE SERVICE START...');

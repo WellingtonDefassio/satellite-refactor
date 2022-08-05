@@ -18,7 +18,7 @@ async function main() {
     update: {},
   });
 
-  const attributes = await prisma.satelliteSendedSpecificAttributes.upsert({
+  const sendAttributes = await prisma.satelliteSendedSpecificAttributes.upsert({
     where: {
       attribute_satelliteServiceName: {
         attribute: 'fwrdId',
@@ -28,20 +28,102 @@ async function main() {
     create: { attribute: 'fwrdId', satelliteServiceName: 'ORBCOMM_V2' },
     update: {},
   });
-  const attributes2 = await prisma.satelliteSendedSpecificAttributes.upsert({
+  const sendAttributes2 = await prisma.satelliteSendedSpecificAttributes.upsert(
+    {
+      where: {
+        attribute_satelliteServiceName: {
+          attribute: 'status',
+          satelliteServiceName: 'ORBCOMM_V2',
+        },
+      },
+      create: { attribute: 'status', satelliteServiceName: 'ORBCOMM_V2' },
+      update: {},
+    },
+  );
+
+  await prisma.satelliteEmittedSpecificAttributes.upsert({
     where: {
       attribute_satelliteServiceName: {
-        attribute: 'status',
+        attribute: 'messageId',
         satelliteServiceName: 'ORBCOMM_V2',
       },
     },
-    create: { attribute: 'status', satelliteServiceName: 'ORBCOMM_V2' },
+    create: { attribute: 'messageId', satelliteServiceName: 'ORBCOMM_V2' },
     update: {},
   });
 
-  console.log(
-    'EXECUTING SEED PRISMA =>' + { gateway, device, attributes, attributes2 },
-  );
+  await prisma.satelliteEmittedSpecificAttributes.upsert({
+    where: {
+      attribute_satelliteServiceName: {
+        attribute: 'receiveUTC',
+        satelliteServiceName: 'ORBCOMM_V2',
+      },
+    },
+    create: { attribute: 'receiveUTC', satelliteServiceName: 'ORBCOMM_V2' },
+    update: {},
+  });
+  await prisma.satelliteEmittedSpecificAttributes.upsert({
+    where: {
+      attribute_satelliteServiceName: {
+        attribute: 'SIN',
+        satelliteServiceName: 'ORBCOMM_V2',
+      },
+    },
+    create: { attribute: 'SIN', satelliteServiceName: 'ORBCOMM_V2' },
+    update: {},
+  });
+  await prisma.satelliteEmittedSpecificAttributes.upsert({
+    where: {
+      attribute_satelliteServiceName: {
+        attribute: 'MIN',
+        satelliteServiceName: 'ORBCOMM_V2',
+      },
+    },
+    create: { attribute: 'MIN', satelliteServiceName: 'ORBCOMM_V2' },
+    update: {},
+  });
+  await prisma.satelliteEmittedSpecificAttributes.upsert({
+    where: {
+      attribute_satelliteServiceName: {
+        attribute: 'regionName',
+        satelliteServiceName: 'ORBCOMM_V2',
+      },
+    },
+    create: { attribute: 'regionName', satelliteServiceName: 'ORBCOMM_V2' },
+    update: {},
+  });
+  await prisma.satelliteEmittedSpecificAttributes.upsert({
+    where: {
+      attribute_satelliteServiceName: {
+        attribute: 'costumerId',
+        satelliteServiceName: 'ORBCOMM_V2',
+      },
+    },
+    create: { attribute: 'costumerId', satelliteServiceName: 'ORBCOMM_V2' },
+    update: {},
+  });
+  await prisma.satelliteEmittedSpecificAttributes.upsert({
+    where: {
+      attribute_satelliteServiceName: {
+        attribute: 'transport',
+        satelliteServiceName: 'ORBCOMM_V2',
+      },
+    },
+    create: { attribute: 'transport', satelliteServiceName: 'ORBCOMM_V2' },
+    update: {},
+  });
+  await prisma.satelliteEmittedSpecificAttributes.upsert({
+    where: {
+      attribute_satelliteServiceName: {
+        attribute: 'mobileOwnerId',
+        satelliteServiceName: 'ORBCOMM_V2',
+      },
+    },
+    create: { attribute: 'mobileOwnerId', satelliteServiceName: 'ORBCOMM_V2' },
+    update: {},
+  });
+
+  console.log('EXECUTING SEED PRISMA =>');
 }
 
 main()

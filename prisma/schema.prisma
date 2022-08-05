@@ -68,6 +68,7 @@ model SatelliteEmittedMessages {
   payload        String
   device         String
   size           Int
+  dateUtc        DateTime
   satelliteSpecificValues SatelliteEmittedSpecificValues[]
   
 }

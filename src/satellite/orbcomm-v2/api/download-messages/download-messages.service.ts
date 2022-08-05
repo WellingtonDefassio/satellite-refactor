@@ -72,25 +72,107 @@ export class DownloadMessagesService {
   }
 
   async createManyMessages(data: ResponseDownloadMessage): Promise<void> {
-    const mappedMessages = data.Messages.map((message) => {
-      return {
-        messageId: message.ID.toString(),
-        messageUTC: new Date(message.MessageUTC),
-        receiveUTC: new Date(message.ReceiveUTC),
-        deviceId: message.MobileID,
-        SIN: message.SIN,
-        MIN: message.RawPayload[1],
-        payload: Buffer.of(...message.RawPayload).toString('hex'),
-        regionName: message.RegionName,
-        otaMessageSize: message.OTAMessageSize,
-        costumerID: message.CustomerID,
-        transport: message.Transport,
-        mobileOwnerID: message.MobileOwnerID.toString(),
-      };
-    });
-    await this.prisma.orbcommDownloadMessages.createMany({
-      data: mappedMessages,
-      skipDuplicates: true,
+    data.Messages.map(async (message) => {
+      return await this.prisma.satelliteEmittedMessages.create({
+        data: {
+          payload: Buffer.of(...message.RawPayload).toString('hex'),
+          device: message.MobileID,
+          size: message.OTAMessageSize,
+          dateUtc: new Date(message.MessageUTC + 'Z'),
+          satelliteSpecificValues: {
+            create: [
+              {
+                value: message.ID.toString(),
+                emittedAttribute: {
+                  connect: {
+                    attribute_satelliteServiceName: {
+                      attribute: 'messageId',
+                      satelliteServiceName: 'ORBCOMM_V2',
+                    },
+                  },
+                },
+              },
+              {
+                value: new Date(message.ReceiveUTC + 'Z').toISOString(),
+                emittedAttribute: {
+                  connect: {
+                    attribute_satelliteServiceName: {
+                      attribute: 'receiveUTC',
+                      satelliteServiceName: 'ORBCOMM_V2',
+                    },
+                  },
+                },
+              },
+              {
+                value: message.SIN.toString(),
+                emittedAttribute: {
+                  connect: {
+                    attribute_satelliteServiceName: {
+                      attribute: 'SIN',
+                      satelliteServiceName: 'ORBCOMM_V2',
+                    },
+                  },
+                },
+              },
+              {
+                value: message.RawPayload[1].toString(),
+                emittedAttribute: {
+                  connect: {
+                    attribute_satelliteServiceName: {
+                      attribute: 'MIN',
+                      satelliteServiceName: 'ORBCOMM_V2',
+                    },
+                  },
+                },
+              },
+              {
+                value: message.RegionName,
+                emittedAttribute: {
+                  connect: {
+                    attribute_satelliteServiceName: {
+                      attribute: 'regionName',
+                      satelliteServiceName: 'ORBCOMM_V2',
+                    },
+                  },
+                },
+              },
+              {
+                value: message.CustomerID.toString(),
+                emittedAttribute: {
+                  connect: {
+                    attribute_satelliteServiceName: {
+                      attribute: 'costumerId',
+                      satelliteServiceName: 'ORBCOMM_V2',
+                    },
+                  },
+                },
+              },
+              {
+                value: message.Transport.toString(),
+                emittedAttribute: {
+                  connect: {
+                    attribute_satelliteServiceName: {
+                      attribute: 'transport',
+                      satelliteServiceName: 'ORBCOMM_V2',
+                    },
+                  },
+                },
+              },
+              {
+                value: message.MobileOwnerID.toString(),
+                emittedAttribute: {
+                  connect: {
+                    attribute_satelliteServiceName: {
+                      attribute: 'mobileOwnerId',
+                      satelliteServiceName: 'ORBCOMM_V2',
+                    },
+                  },
+                },
+              },
+            ],
+          },
+        },
+      });
     });
   }
 
