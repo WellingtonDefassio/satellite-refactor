@@ -59,8 +59,12 @@ model SatelliteSendedSpecificValues {
   createdAt      DateTime                  @default(now())
   sendedMessageId Int
   sendedMessage SatelliteSendedMessages @relation(fields: [sendedMessageId], references: [id])
-  sendedMessageAttributeId Int
-  sendedAttribute SatelliteSendedSpecificAttributes @relation(fields: [sendedMessageAttributeId], references: [id])
+  attributeName String
+  satelliteServiceName String
+  sendedAttribute SatelliteSendedSpecificAttributes @relation(fields: [attributeName, satelliteServiceName], references: [attribute, satelliteServiceName])
+
+  @@unique([sendedMessageId, attributeName, satelliteServiceName])
+
 }
 
 model SatelliteEmittedMessages {

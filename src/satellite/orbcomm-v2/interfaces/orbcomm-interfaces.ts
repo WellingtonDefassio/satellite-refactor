@@ -1,4 +1,4 @@
-import { SatelliteValue } from '@prisma/client';
+import { SatelliteSendedSpecificValues } from '@prisma/client';
 
 export interface ResponseDownloadMessage {
   ErrorID: number;
@@ -113,7 +113,7 @@ export interface StatusesTypeWithId {
 
 export interface SubmittedMessages {
   id: number;
-  satelliteValue: SatelliteValue[];
+  satelliteSpecificValues: SatelliteSendedSpecificValues[];
 }
 
 export interface BodyCheckApi {

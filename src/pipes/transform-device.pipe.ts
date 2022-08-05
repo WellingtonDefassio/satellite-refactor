@@ -19,7 +19,7 @@ export class FetchDevice implements PipeTransform {
     }
     const device = {
       id: fetchDevice.id,
-      gateway: fetchDevice.gatewayId,
+      gateway: fetchDevice.satelliteServiceName,
       status: fetchDevice.status,
     };
     return { ...body, device: device };

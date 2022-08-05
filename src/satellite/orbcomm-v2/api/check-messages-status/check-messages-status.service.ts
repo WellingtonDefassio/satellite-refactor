@@ -1,7 +1,7 @@
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
-import { MessageStatus, SatelliteValue } from '@prisma/client';
+import { MessageStatus } from '@prisma/client';
 import { PrismaService } from 'src/prisma/prisma.service';
 import {
   BodyCheckApi,
@@ -18,7 +18,7 @@ import {
 export class CheckMessagesStatusService {
   constructor(private prisma: PrismaService, private http: HttpService) {}
 
-  // @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_10_SECONDS)
   async checkMessagesStatus() {
     try {
       console.log('START CHECK SERVICE');
@@ -37,7 +37,7 @@ export class CheckMessagesStatusService {
 
       await this.updateMessagesStatus(fetchResponseId);
 
-      console.log(fetchResponseId);
+      console.log(messagesToSend);
     } catch (error) {
       console.log(error.message);
       await this.prisma.orbcommLogError.create({
@@ -63,26 +63,33 @@ export class CheckMessagesStatusService {
   async messagesToUpdateStatus(): Promise<SubmittedMessages[]> {
     return await this.prisma.satelliteSendedMessages.findMany({
       where: {
-        status: 'SUBMITTED',
-        device: { satelliteGateway: { name: 'ORBCOMM_V2' } },
+        AND: {
+          status: 'SUBMITTED',
+          device: { satelliteServiceName: 'ORBCOMM_V2' },
+        },
       },
-      select: { id: true, satelliteValue: true },
+      select: {
+        id: true,
+        satelliteSpecificValues: {
+          where: {
+            AND: [
+              { attributeName: 'fwrdId' },
+              { satelliteServiceName: 'ORBCOMM_V2' },
+            ],
+          },
+        },
+      },
     });
   }
 
-  formatData(
-    messagesToCheck: {
-      id: number;
-      satelliteValue: SatelliteValue[];
-    }[],
-  ): FwrdIdInterface[] {
+  formatData(messagesToCheck: SubmittedMessages[]): FwrdIdInterface[] {
     if (!messagesToCheck.length) {
       throw new Error('NO MORE MESSAGES TO UPDATE');
     }
 
     return messagesToCheck.map((message) => {
-      const fwrdId = message.satelliteValue.filter(
-        (satellite) => satellite.satelliteItemName === 'fwrdId',
+      const fwrdId = message.satelliteSpecificValues.filter(
+        (satellite) => satellite.attributeName === 'fwrdId',
       );
       const messages = {
         id: message.id,
@@ -132,12 +139,13 @@ export class CheckMessagesStatusService {
                 OrbcommMessageStatus[OrbcommStatusMap[response.State]],
               ),
             },
-            satelliteValue: {
+            satelliteSpecificValues: {
               update: {
                 where: {
-                  satelliteMessageId_satelliteItemName: {
-                    satelliteMessageId: response.id,
-                    satelliteItemName: 'statusOrbcomm',
+                  sendedMessageId_attributeName_satelliteServiceName: {
+                    sendedMessageId: response.id,
+                    satelliteServiceName: 'ORBCOMM_V2',
+                    attributeName: 'status',
                   },
                 },
                 data: {

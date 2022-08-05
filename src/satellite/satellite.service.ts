@@ -1,5 +1,4 @@
 import { Injectable } from '@nestjs/common';
-import { OrbcommDownloadMessages } from '@prisma/client';
 import { ArgumentOutOfRangeError, filter } from 'rxjs';
 import { SendMessageDto } from '../dtos/satellite.dto';
 import { PrismaService } from '../prisma/prisma.service';
@@ -20,29 +19,22 @@ export class SatelliteService {
   }
 
   async downloadMessagesAll(param: QueryDownloadParamsDto) {
-    const { limit, device, startDate, mobileId } = param;
-
-    const datas = await this.prisma.orbcommDownloadMessages.findMany({
-      where: {
-        deviceId: device,
-        messageUTC: { gt: startDate },
-        mobileOwnerID: mobileId,
-      },
-      take: limit,
-    });
-
-    const nextDate = this.nextMessageToFind(datas);
-
-    if (!datas.length) {
-      return datas;
-      //TODO tratar o retorno de resultados vazios
-    }
-    return datas.map((data) => {
-      return new DownloadResponseDto(data);
-    });
+    // const { limit, device, startDate, mobileId } = param;
+    // const datas = await this.prisma.satelliteEmittedMessages.findMany({
+    //   where: {},
+    //   take: limit,
+    // });
+    // const nextDate = this.nextMessageToFind(datas);
+    // if (!datas.length) {
+    //   return datas;
+    //   //TODO tratar o retorno de resultados vazios
+    // }
+    // return datas.map((data) => {
+    //   return new DownloadResponseDto(data);
+    // });
   }
 
-  nextMessageToFind(downloadMessagesList: OrbcommDownloadMessages[]) {
+  nextMessageToFind(downloadMessagesList) {
     const result = downloadMessagesList.sort(
       (data, data2) =>
         new Date(data.messageUTC).getTime() -
