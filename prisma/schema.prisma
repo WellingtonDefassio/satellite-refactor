@@ -10,20 +10,89 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model OrbcommDownloadMessages {
+
+model SatelliteServices {
+  id             Int              @id @default(autoincrement())
+  name           String           @unique
+  createdAt      DateTime                  @default(now())
+  devices        Devices[]
+  sendSpecific       SatelliteSendedSpecificAttributes[]
+  emittedSpecific SatelliteEmittedSpecificAttributes[]
+}
+
+model Devices {
+  id               Int                       @id @default(autoincrement())
+  deviceId         String                    @unique
+  createdAt      DateTime                  @default(now())
+  status         DeviceStatus @default(ACTIVE)
+  satelliteServiceName String
+  satelliteService SatelliteServices @relation(fields: [satelliteServiceName], references: [name])
+  satelliteSendedMessages SatelliteSendedMessages[]
+}
+
+model SatelliteSendedMessages {
+  id                     Int                      @id @default(autoincrement())
+  payload                String                   @db.MediumText
+  status                 MessageStatus            @default(CREATED)
+  createdAt              DateTime                 @default(now())
+  deviceId               String
+  device                 Devices                  @relation(fields: [deviceId], references: [deviceId])
+  satelliteSpecificValues SatelliteSendedSpecificValues[]
+
+}
+
+model SatelliteSendedSpecificAttributes {
+  id        Int              @id @default(autoincrement())
+  attribute      String           
+  createdAt      DateTime                  @default(now())
+  satelliteServiceName String
+  satelliteService SatelliteServices @relation(fields: [satelliteServiceName], references: [name])
+  satelliteSpecificValues SatelliteSendedSpecificValues[]
+
+
+ @@unique([attribute, satelliteServiceName])
+}
+
+model SatelliteSendedSpecificValues {
+  id          Int                     @id @default(autoincrement())
+  value       String 
+  createdAt      DateTime                  @default(now())
+  sendedMessageId Int
+  sendedMessage SatelliteSendedMessages @relation(fields: [sendedMessageId], references: [id])
+  sendedMessageAttributeId Int
+  sendedAttribute SatelliteSendedSpecificAttributes @relation(fields: [sendedMessageAttributeId], references: [id])
+}
+
+model SatelliteEmittedMessages {
   id             Int      @id @default(autoincrement())
-  messageId      String   @unique
-  messageUTC     DateTime
-  receiveUTC     DateTime
-  deviceId       String
-  SIN            Int
-  MIN            Int
-  payload        String   @db.MediumText
-  regionName     String
-  otaMessageSize Int
-  costumerID     Int
-  transport      Int
-  mobileOwnerID  String
+  payload        String
+  device         String
+  size           Int
+  satelliteSpecificValues SatelliteEmittedSpecificValues[]
+  
+}
+
+model SatelliteEmittedSpecificAttributes {
+  id             Int      @id @default(autoincrement())
+  attribute      String           
+  createdAt      DateTime                  @default(now())
+  satelliteServiceName String
+  satelliteService SatelliteServices @relation(fields: [satelliteServiceName], references: [name])
+  satelliteAttributes SatelliteEmittedSpecificValues[]
+
+  @@unique([attribute, satelliteServiceName])
+
+}
+
+model SatelliteEmittedSpecificValues {
+  id Int @id @default(autoincrement())
+  value       String 
+  createdAt      DateTime                  @default(now())
+  emittedMessageId Int
+  emittedMessage SatelliteEmittedMessages @relation(fields: [emittedMessageId], references: [id])
+  emittedMessageAttributeId Int
+  emittedAttribute SatelliteEmittedSpecificAttributes @relation(fields: [emittedMessageAttributeId], references: [id])
+
 }
 
 model OrbcommDownloadParamControl {
@@ -47,72 +116,6 @@ model OrbcommLogError {
   service String
   description String   @db.MediumText
   createdAt   DateTime @default(now())
-}
-
-model SatelliteSendedMessages {
-  id                     Int                      @id @default(autoincrement())
-  payload                String                   @db.MediumText
-  deviceId               String
-  device                 Devices                  @relation(fields: [deviceId], references: [deviceId])
-  status                 MessageStatus            @default(CREATED)
-  satelliteValue SatelliteValue[]
-  createdAt              DateTime                 @default(now())
-  updatedAt              DateTime                 @updatedAt
-
-  
-}
-
-model SatelliteAttribute {
-  id        Int              @id @default(autoincrement())
-  gatewayId Int
-  gateway   SatelliteGateway @relation(fields: [gatewayId], references: [id])
-  item      String           @unique
-  satelliteValue SatelliteValue[]
-
-
-  @@unique([gatewayId, item])
-}
-
-model SatelliteValue {
-  id                      Int                     @id @default(autoincrement())
-  satelliteMessageId      Int
-  satelliteSendedMessages SatelliteSendedMessages @relation(fields: [satelliteMessageId], references: [id])
-  satelliteItemName String
-  satelliteAttribute SatelliteAttribute  @relation(fields: [satelliteItemName], references: [item])
-  value String
-
-  @@unique([satelliteMessageId, satelliteItemName])
-}
-
-enum OrbcommMessageStatus {
-  SUBMITTED
-  RECEIVED
-  ERROR
-  DELIVERY_FAILED
-  TIMEOUT
-  CANCELLED
-  WAITING
-  INVALID
-  TRANSMITTED
-}
-
-
-model Devices {
-  id               Int                       @id @default(autoincrement())
-  deviceId         String                    @unique
-  gatewayId        Int
-  satelliteGateway SatelliteGateway          @relation(fields: [gatewayId], references: [id])
-  status           DeviceStatus
-  createdAt        DateTime                  @default(now())
-  updatedAt        DateTime                  @updatedAt
-  messages         SatelliteSendedMessages[]
-}
-
-model SatelliteGateway {
-  id             Int              @id @default(autoincrement())
-  name           String           @unique
-  devices        Devices[]
-  satelliteItens SatelliteAttribute[]
 }
 
 enum MessageStatus {

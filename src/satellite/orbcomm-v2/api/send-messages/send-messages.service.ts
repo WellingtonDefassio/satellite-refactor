@@ -42,10 +42,8 @@ export class SendMessagesService {
       await this.prisma.satelliteSendedMessages.findMany({
         where: {
           AND: [
-            { status: 'CREATED' },
-            {
-              device: { satelliteGateway: { name: { equals: 'ORBCOMM_V2' } } },
-            },
+            { status: { equals: 'CREATED' } },
+            { device: { satelliteServiceName: { equals: 'ORBCOMM_V2' } } },
           ],
         },
       });
@@ -95,15 +93,29 @@ export class SendMessagesService {
         where: { id: message.UserMessageID },
         data: {
           status: 'SUBMITTED',
-          satelliteValue: {
+          satelliteSpecificValues: {
             create: [
               {
-                satelliteItemName: 'fwrdId',
                 value: message.ForwardMessageID.toString(),
+                sendedAttribute: {
+                  connect: {
+                    attribute_satelliteServiceName: {
+                      attribute: 'fwrdId',
+                      satelliteServiceName: 'ORBCOMM_V2',
+                    },
+                  },
+                },
               },
               {
-                satelliteItemName: 'statusOrbcomm',
                 value: 'SUBMITTED',
+                sendedAttribute: {
+                  connect: {
+                    attribute_satelliteServiceName: {
+                      attribute: 'status',
+                      satelliteServiceName: 'ORBCOMM_V2',
+                    },
+                  },
+                },
               },
             ],
           },
