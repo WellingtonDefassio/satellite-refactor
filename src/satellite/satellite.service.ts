@@ -3,6 +3,7 @@ import { OrbcommDownloadMessages } from '@prisma/client';
 import { ArgumentOutOfRangeError, filter } from 'rxjs';
 import { SendMessageDto } from '../dtos/satellite.dto';
 import { PrismaService } from '../prisma/prisma.service';
+import { DownloadResponseDto } from './dtos/download-messages.dto';
 import { QueryDownloadParamsDto } from './dtos/download-messages.query';
 
 @Injectable()
@@ -21,7 +22,7 @@ export class SatelliteService {
   async downloadMessagesAll(param: QueryDownloadParamsDto) {
     const { limit, device, startDate, mobileId } = param;
 
-    const data = await this.prisma.orbcommDownloadMessages.findMany({
+    const datas = await this.prisma.orbcommDownloadMessages.findMany({
       where: {
         deviceId: device,
         messageUTC: { gt: startDate },
@@ -30,16 +31,15 @@ export class SatelliteService {
       take: limit,
     });
 
-    const nextDate = this.nextMessageToFind(data);
+    const nextDate = this.nextMessageToFind(datas);
 
-    if (!data.length) {
-      return data;
+    if (!datas.length) {
+      return datas;
       //TODO tratar o retorno de resultados vazios
     }
-    return {
-      nextDate,
-      data,
-    };
+    return datas.map((data) => {
+      return new DownloadResponseDto(data);
+    });
   }
 
   nextMessageToFind(downloadMessagesList: OrbcommDownloadMessages[]) {
