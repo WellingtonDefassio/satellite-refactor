@@ -6,7 +6,7 @@ export class DownloadResponseDto {
   device: string;
   messageSize: number;
 
-  // @Exclude()
+  @Exclude()
   dateUtc: Date;
 
   @Expose({ name: 'date' })

@@ -56,7 +56,6 @@ model SatelliteSendedSpecificAttributes {
 model SatelliteSendedSpecificValues {
   id          Int                     @id @default(autoincrement())
   value       String 
-  createdAt      DateTime                  @default(now())
   sendedMessageId Int
   sendedMessage SatelliteSendedMessages @relation(fields: [sendedMessageId], references: [id])
   attributeName String

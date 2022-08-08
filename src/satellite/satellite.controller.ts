@@ -12,7 +12,7 @@ import {
 import { Serialize } from 'src/interceptors/serialize.interceptor';
 import { SendMessageDto } from '../dtos/satellite.dto';
 import { FetchDevice } from '../pipes/transform-device.pipe';
-import { QueryDownloadParamsDto } from './dtos/download-messages.query';
+import { findEmittedMessagesDto } from './dtos/download-messages.query';
 import { SatelliteService } from './satellite.service';
 
 @Controller('satellite')
@@ -20,7 +20,7 @@ export class SatelliteController {
   constructor(private satelliteService: SatelliteService) {}
 
   @UsePipes(FetchDevice)
-  @Post('send-message')
+  @Post('send-messages')
   async sendMessage(@Body() body: SendMessageDto) {
     try {
       console.log('Controller body :' + JSON.stringify(body));
@@ -31,14 +31,13 @@ export class SatelliteController {
   }
 
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
-  // @UseInterceptors(DownloadResponseInterceptor)
-  @Get('download-message')
+  @Get('emitted-messages')
   async getDownloadMessages(
     @Query()
-    params: QueryDownloadParamsDto,
+    params: findEmittedMessagesDto,
   ) {
     try {
-      return await this.satelliteService.downloadMessagesAll(params);
+      return await this.satelliteService.getEmittedMessages(params);
     } catch (error) {
       console.log(error.message);
     }

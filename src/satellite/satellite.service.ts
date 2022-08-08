@@ -1,9 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { ArgumentOutOfRangeError, filter } from 'rxjs';
+import { SatelliteEmittedMessages } from '@prisma/client';
 import { SendMessageDto } from '../dtos/satellite.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { DownloadResponseDto } from './dtos/download-messages.dto';
-import { QueryDownloadParamsDto } from './dtos/download-messages.query';
+import { findEmittedMessagesDto } from './dtos/download-messages.query';
 
 @Injectable()
 export class SatelliteService {
@@ -18,35 +18,61 @@ export class SatelliteService {
     });
   }
 
-  async downloadMessagesAll(param: QueryDownloadParamsDto) {
-    const { limit, device, startDate, mobileId } = param;
-    const datas = await this.prisma.satelliteEmittedMessages.findMany({
-      where: { device, dateUtc: { gt: startDate } },
-      take: limit,
-    });
-    // const nextDate = this.nextMessageToFind(datas);
+  async getEmittedMessages(param: findEmittedMessagesDto) {
+    const { limit, device, startDate, messageSize } = param;
+    const emittedMessages = await this.prisma.satelliteEmittedMessages.findMany(
+      {
+        where: {
+          device,
+          dateUtc: { gt: startDate },
+          messageSize: { gt: messageSize },
+        },
+        take: limit + 1,
+      },
+    );
+    const formattedMessages = this.applyAdjustment(emittedMessages);
 
-    if (!datas.length) {
-      return datas;
+    const nextDate = formattedMessages[formattedMessages.length - 1].dateUtc
+      .toISOString()
+      .slice(0, 19)
+      .replace('T', ' ');
+
+    if (!formattedMessages.length) {
+      return formattedMessages;
       //TODO tratar o retorno de resultados vazios
     }
-
-    return datas.map((data) => {
+    const emittedMessagesFormatted = formattedMessages.map((data) => {
       return new DownloadResponseDto(data);
     });
+
+    return { nextDate, data: emittedMessagesFormatted };
   }
 
-  nextMessageToFind(downloadMessagesList) {
-    const result = downloadMessagesList.sort(
-      (data, data2) =>
-        new Date(data.messageUTC).getTime() -
-        new Date(data2.messageUTC).getTime(),
+  applyAdjustment(emittedMessages: SatelliteEmittedMessages[]) {
+    const orderMessages = this.orderMessagesByDate(emittedMessages);
+    const messagesWithoutDuplicates =
+      this.deleteLastDateIfDuplicate(orderMessages);
+
+    return messagesWithoutDuplicates;
+  }
+
+  orderMessagesByDate(downloadMessagesList: SatelliteEmittedMessages[]) {
+    const result = [...downloadMessagesList].sort(
+      (data, data2) => data.dateUtc.getTime() - data2.dateUtc.getTime(),
     );
-    const lastRegister = result[result.length - 1];
-
-    console.log(lastRegister);
-    const { messageUTC } = lastRegister;
-
-    return messageUTC;
+    return result;
+  }
+  deleteLastDateIfDuplicate(orderedList: SatelliteEmittedMessages[]) {
+    const newOrderedList = [...orderedList];
+    if (
+      newOrderedList[newOrderedList.length - 1].dateUtc.getTime() ===
+      newOrderedList[newOrderedList.length - 2].dateUtc.getTime()
+    ) {
+      newOrderedList.pop();
+      return this.deleteLastDateIfDuplicate(newOrderedList);
+    } else {
+      newOrderedList.pop();
+      return newOrderedList;
+    }
   }
 }

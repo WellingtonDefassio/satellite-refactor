@@ -1,7 +1,7 @@
 import { Transform } from 'class-transformer';
 import { IsDate, IsNumber, IsOptional, IsString, Max } from 'class-validator';
 
-export class QueryDownloadParamsDto {
+export class findEmittedMessagesDto {
   @IsString()
   @IsOptional()
   device?: string;
@@ -29,9 +29,12 @@ export class QueryDownloadParamsDto {
   })
   startDate: Date = maxDays();
 
-  @IsString()
   @IsOptional()
-  mobileId?: string;
+  @IsNumber()
+  @Transform((param) => {
+    return parseInt(param.value);
+  })
+  messageSize: number;
 }
 
 function maxDays() {

@@ -18,7 +18,7 @@ import {
 export class CheckMessagesStatusService {
   constructor(private prisma: PrismaService, private http: HttpService) {}
 
-  // @Cron(CronExpression.EVERY_30_SECONDS)
+  @Cron(CronExpression.EVERY_30_SECONDS)
   async checkMessagesStatus() {
     try {
       console.log('START CHECK SERVICE');
