@@ -1,4 +1,8 @@
-import { ClassSerializerInterceptor, Module } from '@nestjs/common';
+import {
+  ClassSerializerInterceptor,
+  Module,
+  ValidationPipe,
+} from '@nestjs/common';
 import { SatelliteService } from './satellite.service';
 import { SatelliteController } from './satellite.controller';
 import { EmittedMessagesServices } from './orbcomm-v2/api/emmited-messages/emitted-messages.service';

@@ -1,7 +1,7 @@
 import { Transform } from 'class-transformer';
 import { IsDate, IsNumber, IsOptional, IsString, Max } from 'class-validator';
 
-export class findEmittedMessagesDto {
+export class FindEmittedMessagesDto {
   @IsString()
   @IsOptional()
   device?: string;

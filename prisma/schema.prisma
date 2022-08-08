@@ -34,7 +34,7 @@ model SatelliteSendedMessages {
   id                     Int                      @id @default(autoincrement())
   payload                String                   @db.MediumText
   status                 MessageStatus            @default(CREATED)
-  createdAt              DateTime                 @default(now())
+  createdAt              DateTime               @db.DateTime(0)  @default(now())
   deviceId               String
   device                 Devices                  @relation(fields: [deviceId], references: [deviceId])
   satelliteSpecificValues SatelliteSendedSpecificValues[]
@@ -91,7 +91,6 @@ model SatelliteEmittedSpecificAttributes {
 model SatelliteEmittedSpecificValues {
   id Int @id @default(autoincrement())
   value       String 
-  createdAt      DateTime                  @default(now())
   emittedMessageId Int
   emittedMessage SatelliteEmittedMessages @relation(fields: [emittedMessageId], references: [id])
   emittedMessageAttributeId Int

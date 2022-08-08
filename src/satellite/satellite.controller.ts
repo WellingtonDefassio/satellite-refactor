@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  Param,
   ParseIntPipe,
   Post,
   Query,
@@ -9,11 +10,12 @@ import {
   UsePipes,
   ValidationPipe,
 } from '@nestjs/common';
-import { Serialize } from 'src/interceptors/serialize.interceptor';
-import { SendMessageDto } from '../dtos/satellite.dto';
-import { FetchDevice } from '../pipes/transform-device.pipe';
-import { findEmittedMessagesDto } from './dtos/download-messages.query';
+import { Serialize } from 'src/satellite/interceptors/serialize.interceptor';
+import { SendMessageDto } from './dtos/post-send-messages.dto';
+import { FetchDevice } from './pipes/transform-device.pipe';
+import { FindEmittedMessagesDto } from './dtos/get-emitted-messages-query.dto';
 import { SatelliteService } from './satellite.service';
+import { FindSendMessagesDto } from './dtos/get-send-messages-query.dto';
 
 @Controller('satellite')
 export class SatelliteController {
@@ -21,20 +23,27 @@ export class SatelliteController {
 
   @UsePipes(FetchDevice)
   @Post('send-messages')
-  async sendMessage(@Body() body: SendMessageDto) {
+  async postMessage(@Body() body: SendMessageDto) {
     try {
-      console.log('Controller body :' + JSON.stringify(body));
       return this.satelliteService.createSendMessage(body);
     } catch (error) {
       throw Error(error.message);
     }
   }
 
-  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  @Get('send-messages')
+  async getMessage(@Query() params: FindSendMessagesDto) {
+    try {
+      return await this.satelliteService.getSendedMessages(params);
+    } catch (error) {
+      console.log(error.message);
+    }
+  }
+
   @Get('emitted-messages')
   async getDownloadMessages(
     @Query()
-    params: findEmittedMessagesDto,
+    params: FindEmittedMessagesDto,
   ) {
     try {
       return await this.satelliteService.getEmittedMessages(params);
