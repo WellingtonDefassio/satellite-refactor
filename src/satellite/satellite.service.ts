@@ -1,5 +1,8 @@
 import { Injectable } from '@nestjs/common';
-import { SatelliteSendedMessages } from '@prisma/client';
+import {
+  SatelliteEmittedMessages,
+  SatelliteSendedMessages,
+} from '@prisma/client';
 import { SendMessageDto } from './dtos/post-send-messages.dto';
 import { PrismaService } from '../prisma/prisma.service';
 import { DownloadResponseDto } from './dtos/get-emitted-messages.dto';
@@ -59,6 +62,7 @@ export class SatelliteService {
 
   async getEmittedMessages(param: FindEmittedMessagesDto) {
     const { limit, device, startDate, messageSize } = param;
+
     const emittedMessages = await this.prisma.satelliteEmittedMessages.findMany(
       {
         where: {
@@ -71,7 +75,7 @@ export class SatelliteService {
     );
     if (!emittedMessages.length) return emittedMessages;
 
-    const formattedMessages = this.applyAdjustment(
+    const formattedMessages: SatelliteEmittedMessages[] = this.applyAdjustment(
       emittedMessages,
       'dateUtc',
       limit,

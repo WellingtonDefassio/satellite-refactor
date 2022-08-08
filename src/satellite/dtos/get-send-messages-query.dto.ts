@@ -1,6 +1,7 @@
 import { MessageStatus } from '@prisma/client';
 import { Transform } from 'class-transformer';
 import {
+  ArrayMaxSize,
   IsArray,
   isArray,
   IsDate,
@@ -9,6 +10,7 @@ import {
   IsOptional,
   IsString,
   Max,
+  MaxLength,
 } from 'class-validator';
 
 export class FindSendMessagesDto {
@@ -51,6 +53,7 @@ export class FindSendMessagesDto {
 
   @IsArray()
   @IsOptional()
+  @ArrayMaxSize(4)
   @Transform((param) => {
     const listOfString = param.value.split(',');
     const listOfNumber = listOfString.map((number) => {
