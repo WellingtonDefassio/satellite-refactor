@@ -42,18 +42,23 @@ export class SatelliteService {
         limit,
       );
 
-      const nextDate = this.formatDate(validatedMessages, 'createdAt');
+      const nextDateToSend = this.getLastFormattedDate(
+        validatedMessages,
+        'createdAt',
+      );
 
       const sendedMessagesFormatted = validatedMessages.map((data) => {
         return new SendedResponseDto(data);
       });
-      return { nextMessage: nextDate, data: sendedMessagesFormatted };
+      return { nextMessage: nextDateToSend, data: sendedMessagesFormatted };
     }
     if (idsExists) {
       const findManySendedMessages =
         await this.prisma.satelliteSendedMessages.findMany({
           where: { id: { in: ids } },
         });
+      if (!findManySendedMessages.length) return findManySendedMessages;
+
       return findManySendedMessages.map((data) => {
         return new SendedResponseDto(data);
       });
@@ -80,7 +85,7 @@ export class SatelliteService {
       'dateUtc',
       limit,
     );
-    const nextDate = this.formatDate(formattedMessages, 'dateUtc');
+    const nextDate = this.getLastFormattedDate(formattedMessages, 'dateUtc');
 
     const emittedMessagesFormatted = formattedMessages.map((data) => {
       return new DownloadResponseDto(data);
@@ -125,7 +130,7 @@ export class SatelliteService {
       return newOrderedList;
     }
   }
-  private formatDate(messages: any[], param: string) {
+  private getLastFormattedDate(messages: any[], param: string) {
     return messages[messages.length - 1][param]
       .toISOString()
       .slice(0, 19)

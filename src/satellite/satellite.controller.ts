@@ -1,16 +1,4 @@
-import {
-  Body,
-  Controller,
-  Get,
-  Param,
-  ParseIntPipe,
-  Post,
-  Query,
-  UseInterceptors,
-  UsePipes,
-  ValidationPipe,
-} from '@nestjs/common';
-import { Serialize } from 'src/satellite/interceptors/serialize.interceptor';
+import { Body, Controller, Get, Post, Query, UsePipes } from '@nestjs/common';
 import { SendMessageDto } from './dtos/post-send-messages.dto';
 import { FetchDevice } from './pipes/transform-device.pipe';
 import { FindEmittedMessagesDto } from './dtos/get-emitted-messages-query.dto';
