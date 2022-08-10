@@ -9,7 +9,9 @@ describe('CheckMessagesStatusService', () => {
       providers: [CheckMessagesStatusService],
     }).compile();
 
-    service = module.get<CheckMessagesStatusService>(CheckMessagesStatusService);
+    service = module.get<CheckMessagesStatusService>(
+      CheckMessagesStatusService,
+    );
   });
 
   it('should be defined', () => {

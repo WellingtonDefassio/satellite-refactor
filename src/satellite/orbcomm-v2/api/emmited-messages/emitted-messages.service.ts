@@ -40,7 +40,7 @@ export class EmittedMessagesServices {
     } catch (error) {
       console.log(error.message);
       await this.prisma.orbcommLogError.create({
-        data: { service: 'DOWNLOAD_MESSAGE', description: error.message },
+        data: { service: 'EMITTED_MESSAGES', description: error.message },
       });
     }
   }
@@ -219,19 +219,17 @@ export class EmittedMessagesServices {
   }
 
   async findNextMessage(): Promise<string> {
-    const lastMessage = await this.prisma.orbcommDownloadParamControl.findFirst(
-      {
+    const { nextMessage } =
+      await this.prisma.orbcommDownloadParamControl.findFirst({
         select: { nextMessage: true },
         orderBy: [{ id: 'desc' }],
         take: 1,
-      },
-    );
-    if (!lastMessage) {
-      throw new Error(
-        'NO PARAM FOUND IN "orbcommDownloadParamControl" TABLE, PLS VERIFY',
-      );
+      });
+
+    if (!nextMessage) {
+      throw new Error('orbcommDownloadParamControl not provide a return value');
     } else {
-      return lastMessage.nextMessage;
+      return nextMessage;
     }
   }
 }
