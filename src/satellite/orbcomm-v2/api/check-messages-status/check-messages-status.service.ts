@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { MessageStatus } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../../../prisma/prisma.service';
 import {
   BodyCheckApi,
   ForwardStatuses,
@@ -44,7 +44,7 @@ export class CheckMessagesStatusService {
     }
   }
 
-  addIdInResponse(
+  private addIdInResponse(
     apiResponse: ForwardStatuses,
     formattedData: FwrdIdInterface[],
   ): StatusesTypeWithId[] {
@@ -58,7 +58,7 @@ export class CheckMessagesStatusService {
     });
   }
 
-  async messagesToUpdateStatus(): Promise<SubmittedMessages[]> {
+  private async messagesToUpdateStatus(): Promise<SubmittedMessages[]> {
     return await this.prisma.satelliteSendedMessages.findMany({
       where: {
         AND: {
@@ -80,7 +80,7 @@ export class CheckMessagesStatusService {
     });
   }
 
-  formatData(messagesToCheck: SubmittedMessages[]): FwrdIdInterface[] {
+  private formatData(messagesToCheck: SubmittedMessages[]): FwrdIdInterface[] {
     if (!messagesToCheck.length) {
       throw new Error('NO MORE MESSAGES TO UPDATE');
     }
@@ -97,7 +97,7 @@ export class CheckMessagesStatusService {
     });
   }
 
-  formatDataToApi(formattedData: FwrdIdInterface[]): BodyCheckApi {
+  private formatDataToApi(formattedData: FwrdIdInterface[]): BodyCheckApi {
     if (!formattedData.length) {
       throw new Error('NO CHECK MESSAGES TO SEND!');
     }
@@ -124,7 +124,7 @@ export class CheckMessagesStatusService {
       });
   }
 
-  async updateMessagesStatus(
+  private async updateMessagesStatus(
     fetchResponseId: StatusesTypeWithId[],
   ): Promise<void> {
     fetchResponseId.forEach(async (response) => {
@@ -174,7 +174,7 @@ export class CheckMessagesStatusService {
         return 'CANCELLED';
     }
   }
-  validateResponse(apiResponse: ForwardStatuses): void {
+  private validateResponse(apiResponse: ForwardStatuses): void {
     if (apiResponse.ErrorID === undefined) {
       throw new Error('REQUEST FOR CHECK FAIL!');
     }
