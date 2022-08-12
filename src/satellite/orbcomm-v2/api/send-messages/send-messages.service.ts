@@ -2,7 +2,7 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { SatelliteSendedMessages } from '@prisma/client';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../../../prisma/prisma.service';
 import {
   MessageBodyPost,
   Submission,
@@ -24,11 +24,10 @@ export class SendMessagesService {
       const formattedMessages = this.formatMessageToPost(messages);
 
       const apiResponse = await this.postApiOrbcomm(link, formattedMessages);
+
       const validatedResponse = this.validateApiReturn(apiResponse);
 
-      const created = await this.updateMessageStatus(validatedResponse);
-
-      console.log(created);
+      await this.updateMessageStatus(validatedResponse);
     } catch (error) {
       console.log(error.message);
       await this.prisma.orbcommLogError.create({
@@ -133,7 +132,6 @@ export class SendMessagesService {
     const apiValidatedResponse = apiResponse.Submissions.filter(
       (message) => !message.ErrorID,
     );
-
     if (!apiValidatedResponse.length) {
       throw new Error(
         'MESSAGE NOT ACCEPT FOR THE API SATELLITE, WILL TRY AGAIN SON',

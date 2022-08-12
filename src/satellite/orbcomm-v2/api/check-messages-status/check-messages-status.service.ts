@@ -26,7 +26,9 @@ export class CheckMessagesStatusService {
       const link = process.env.ORBCOMM_FORWARD_STATUSES;
 
       const messagesToCheck = await this.messagesToUpdateStatus();
+
       const formattedData = this.formatData(messagesToCheck);
+
       const messagesToSend = this.formatDataToApi(formattedData);
 
       const apiResponse = await this.getApiOrbcomm(link, messagesToSend);
@@ -37,7 +39,6 @@ export class CheckMessagesStatusService {
 
       await this.updateMessagesStatus(fetchResponseId);
     } catch (error) {
-      console.log(error.message);
       await this.prisma.orbcommLogError.create({
         data: { service: 'CHECK_MESSAGE', description: error.message },
       });
@@ -53,6 +54,7 @@ export class CheckMessagesStatusService {
         (response) =>
           value.fwrdIdValue === response.ForwardMessageID.toString(),
       );
+
       const fetchResponse = { ...findResponse, id: value.id };
       return fetchResponse;
     });
@@ -128,7 +130,7 @@ export class CheckMessagesStatusService {
     fetchResponseId: StatusesTypeWithId[],
   ): Promise<void> {
     fetchResponseId.forEach(async (response) => {
-      if (response.State !== 0) {
+      if (response.State !== 0 && response.State) {
         await this.prisma.satelliteSendedMessages.update({
           where: { id: response.id },
           data: {

@@ -1,20 +1,44 @@
 import { HttpService } from '@nestjs/axios';
 import { Test, TestingModule } from '@nestjs/testing';
 import { PrismaService } from '../../../../prisma/prisma.service';
+import { ForwardStatuses } from '../../interfaces/orbcomm-interfaces';
 import { CheckMessagesStatusService } from './check-messages-status.service';
 
-const mockHttpReturn = {
+interface httpReturn {
+  data: ForwardStatuses;
+}
+
+const mockHttpReturn: httpReturn = {
   data: {
     ErrorID: 0,
-    Statuses: {
-      ForwardMessageID: 12345,
-      IsClosed: true,
-      State: 3,
-      StateUTC: 'string',
-      ReferenceNumber: 1,
-      Transport: 'string',
-      RegionName: 'string',
-    },
+    Statuses: [
+      {
+        ForwardMessageID: 123456789,
+        IsClosed: true,
+        State: 3,
+        StateUTC: 'string',
+        ReferenceNumber: 1,
+        Transport: 'string',
+        RegionName: 'string',
+      },
+    ],
+  },
+};
+
+const mockHttpReturnWithDifferentFwdMessageID: httpReturn = {
+  data: {
+    ErrorID: 0,
+    Statuses: [
+      {
+        ForwardMessageID: 7452699,
+        IsClosed: true,
+        State: 3,
+        StateUTC: 'string',
+        ReferenceNumber: 1,
+        Transport: 'string',
+        RegionName: 'string',
+      },
+    ],
   },
 };
 
@@ -56,6 +80,7 @@ describe('CheckMessagesStatusService', () => {
               findMany: jest
                 .fn()
                 .mockResolvedValue(mockFindManySatelliteSendedMessages),
+              update: jest.fn().mockResolvedValue('any'),
             },
             orbcommLogError: {
               create: jest.fn().mockResolvedValue('?'),
@@ -128,5 +153,27 @@ describe('CheckMessagesStatusService', () => {
         description: 'UPDATE REQUEST FAIL IN ERROR ID 333',
       },
     });
+  });
+  it('will call satelliteSendedMessages update if apiResponse update message status', async () => {
+    const spySatelliteSendedMessages = jest.spyOn(
+      prisma.satelliteSendedMessages,
+      'update',
+    );
+    await service.checkMessagesStatus();
+
+    expect(spySatelliteSendedMessages).toBeCalledTimes(1);
+  });
+  it('will not call satelliteSendedMessages update if apiResponse update message status', async () => {
+    jest
+      .spyOn(http.axiosRef, 'get')
+      .mockResolvedValueOnce(mockHttpReturnWithDifferentFwdMessageID);
+
+    const spySatelliteSendedMessages = jest.spyOn(
+      prisma.satelliteSendedMessages,
+      'update',
+    );
+    await service.checkMessagesStatus();
+
+    expect(spySatelliteSendedMessages).toBeCalledTimes(0);
   });
 });
