@@ -24,13 +24,13 @@ export class SatelliteService {
   }
 
   async getSendedMessages(param: FindSendMessagesDto) {
-    const { id, status, deviceId, limit, startDate, ids } = param;
+    const { status, deviceId, limit, startDate, ids } = param;
     const idsExists = ids !== undefined;
 
     if (!idsExists) {
       const findManySendedMessages =
         await this.prisma.satelliteSendedMessages.findMany({
-          where: { id, deviceId, status, createdAt: { gt: startDate } },
+          where: { deviceId, status, createdAt: { gt: startDate } },
           take: limit + 1,
         });
 

@@ -15,13 +15,6 @@ import {
 
 export class FindSendMessagesDto {
   @IsOptional()
-  @IsNumber()
-  @Transform((param) => {
-    return parseInt(param.value);
-  })
-  id: number;
-
-  @IsOptional()
   @IsEnum(MessageStatus, {
     message: `the input value must be ${MessageStatus.SUBMITTED} ${MessageStatus.CANCELLED} ${MessageStatus.FAILED} ${MessageStatus.CREATED} ${MessageStatus.SENDED} ${MessageStatus.SUBMITTED} or ${MessageStatus.TIMEOUT}`,
   })
