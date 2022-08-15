@@ -61,7 +61,7 @@ export class CheckMessagesStatusService {
   }
 
   private async messagesToUpdateStatus(): Promise<SubmittedMessages[]> {
-    return await this.prisma.satelliteSendedMessages.findMany({
+    const messages = await this.prisma.satelliteSendedMessages.findMany({
       where: {
         AND: {
           status: 'SUBMITTED',
@@ -80,13 +80,14 @@ export class CheckMessagesStatusService {
         },
       },
     });
-  }
-
-  private formatData(messagesToCheck: SubmittedMessages[]): FwrdIdInterface[] {
-    if (!messagesToCheck.length) {
+    if (!messages.length) {
       throw new Error('NO MORE MESSAGES TO UPDATE');
     }
 
+    return messages;
+  }
+
+  private formatData(messagesToCheck: SubmittedMessages[]): FwrdIdInterface[] {
     return messagesToCheck.map((message) => {
       const fwrdId = message.satelliteSpecificValues.filter(
         (satellite) => satellite.attributeName === 'fwrdId',
@@ -100,10 +101,6 @@ export class CheckMessagesStatusService {
   }
 
   private formatDataToApi(formattedData: FwrdIdInterface[]): BodyCheckApi {
-    if (!formattedData.length) {
-      throw new Error('NO CHECK MESSAGES TO SEND!');
-    }
-
     const fwIDs = formattedData.map((message) => message.fwrdIdValue);
 
     const messageBodyCheck: MessageBodyCheck = {

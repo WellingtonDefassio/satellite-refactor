@@ -105,7 +105,7 @@ describe('SendMessagesService', () => {
     expect(spyLogError).toHaveBeenCalledWith({
       data: {
         description: 'ERROR IN POST MESSAGE API ERROR ID 222',
-        service: 'SEND_MESSAGE',
+        service: 'SEND_MESSAGES',
       },
     });
   });
@@ -122,7 +122,7 @@ describe('SendMessagesService', () => {
       data: {
         description:
           'MESSAGE NOT ACCEPT FOR THE API SATELLITE, WILL TRY AGAIN SON',
-        service: 'SEND_MESSAGE',
+        service: 'SEND_MESSAGES',
       },
     });
   });

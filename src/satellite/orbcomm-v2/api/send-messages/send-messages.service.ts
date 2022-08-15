@@ -31,7 +31,7 @@ export class SendMessagesService {
     } catch (error) {
       console.log(error.message);
       await this.prisma.orbcommLogError.create({
-        data: { service: 'SEND_MESSAGE', description: error.message },
+        data: { service: 'SEND_MESSAGES', description: error.message },
       });
     }
   }

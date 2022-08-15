@@ -86,11 +86,46 @@ fluxo:
 -> é realizada uma chamada na api do cliente onde o parametro nextMessage é enviado, em resposta é espero o retorno das 500 proximas mensagens emitidas e o parametro nextMessage e um parametro ErrorID = 0;
 
 -> é validado a resposta da api do cliente e caso seja diferente da esperada é lançado um Erro.
+
 -> é chamado o metodo createManyMessages, este irá criar na tabela Satellites um registro para cada mensagem, e 8 registros na tabela especificos já que para cada mensagem da orbcomm é devolvido 8 valores espeficos do serviço!
+
 -> dentro do metodo upsertMobileVersion é realizado um filtro no retorno da api que mantem apenas as mensagens com o atributo 'Payload', este é usado para atualizar as versoes do equipamentos, atualiza valores existentes e cria caso não exista, chave unica de referencia 'DeviceID'
+
 -> após é chamado o createNextUtcParam que é responsavel por persistir a proxima nextMessage que será chamada na proxima execução do serviço.
+
 -> em caso de erros é persistido na tabela LogError 'usado apenas para o serviço da orbcomm' a mensagem do erro, e o serviço 'EMITTED_MESSAGES'
 
 realizado teste de integração.
 
 ### SEND-MESSAGES
+
+serviço responsavel por coletar mensagens destinadas a um device e enviar para a api da orbcomm.
+
+fluxo:
+-> é coletado no banco de dados todas as mensagens com o status CREATED (indica que a mensagem ainda não foi processada) e que o device atrelado a mensagem seja do serviço ORBCOMM_V2, caso não haja mensagem é lançado um exceção e o ciclo do serviço é interrompido. obs: no momento o serviço captura todas as mensagens, porem é possivel inserir o parametro take dentro da pesquisa para limitar o numero de mensagens que será enviado para serviço de satellite. após o termino do serviço o status das mensagens será alterado e elas não serão coletadas novamente.
+
+-> é chamado o metodo formatMessageToPost este serviço é responsavel por formatar as mensagens retornadas no formato aceito pela api da ORBCOMM, IMPORTANTE!!: hoje as credenciais estão hardcode dentro do metodo, podem substituida por uma varivael de ambiente .env.
+
+-> é chamado o metodo postApiOrbcomm responsavel por realizar o post das mensagens no serviço orbcomm.
+
+-> o retorno deste post é validado pelo metodo validateApiReturn, caso a resposta seja diferente da esperada é lançada uma exceção e o ciclo do serviço é interrompido.
+
+-> por fim é chamado o updateMessageStatus onde é fornecido o array de resposta Submissions da api, este é responsavel por atualizar o status da mensagem para SUBMITTED e criar os valores na tabela specificValues os atributos fwrdID e status, que são atributos especificos do serviço.
+
+-> em caso de erros é persistido na tabela LogError 'usado apenas para o serviço da orbcomm' a mensagem do erro, e o serviço 'SEND_MESSAGES'
+
+### CHECK-MESSAGES
+
+serviço responsavel por verificar o status da mensagem enviada ao serviço de satellite orbcomm, até a resposta do mesmo.
+
+-> é coletado no bando todas as mensagens que possuem o status SUBMITTED e o device atrelado o serviço ORBCOMM_V2, caso não haja mensagens é lançado um exceção e o serviço é interrompido.
+
+-> encima das mensagens filtradas é realizado uma formatação onde é criado um objeto com os atributos id e fwrdIdValue e retornado.
+
+-> após isso uma nova formatação é realizada esta para atender o solicitado pela api orbcomm, onde é enviado o id, senha e as fwids messages que desejamos consultar. IMPORTANTE!!: hoje as credenciais estão hardcode dentro do metodo, podem substituida por uma varivael de ambiente .env.
+
+-> o valor retornado pela api é submetido a ao metodo validateResponse onde caso a mensagem não devolva o valor esperado é lançado uma exceção e o cliclo é interrompido.
+
+-> com o retorno correto da api é chamado o metodo addIdInResponse ele é responsavel por pegar a lista de objetos retornado pela api identificar qual possui a propriedade ForwardMessageID igual a fwrdIdValue enviada e acrescentar o id(banco de dados) no body.
+
+-> por fim para cada mensagem retornada em que o State (codigo do status) que seja diferente de zero será atualizado no banco com seu novo status, e o valor especifico orbcomm status também será atualizado.
