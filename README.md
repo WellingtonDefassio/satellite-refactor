@@ -82,7 +82,9 @@ serviço responsável por capturar todas as mensagens emitidas pelos aparelhos q
 
 fluxo:
 -> é obtido o ultimo registro na tabela orbcommDownloadParamControl coluna nextMessage, parametro usado para consulta na api do cliente.
+
 -> é realizada uma chamada na api do cliente onde o parametro nextMessage é enviado, em resposta é espero o retorno das 500 proximas mensagens emitidas e o parametro nextMessage e um parametro ErrorID = 0;
+
 -> é validado a resposta da api do cliente e caso seja diferente da esperada é lançado um Erro.
 -> é chamado o metodo createManyMessages, este irá criar na tabela Satellites um registro para cada mensagem, e 8 registros na tabela especificos já que para cada mensagem da orbcomm é devolvido 8 valores espeficos do serviço!
 -> dentro do metodo upsertMobileVersion é realizado um filtro no retorno da api que mantem apenas as mensagens com o atributo 'Payload', este é usado para atualizar as versoes do equipamentos, atualiza valores existentes e cria caso não exista, chave unica de referencia 'DeviceID'
