@@ -89,6 +89,26 @@ fluxo:
 
 ```
 
+```bash
+### GET-SENDED-MESSAGES
+
+fluxo:
+-> é recebido via controller os possiveis parametros (id, status, deviceId, limit, startDate ou ids)
+id: busca um id individualmente.
+deviceId: busca pelo mensagens de um device especifico.
+status: busca pelo status da mensagem
+startDate: data inicial da consulta. (data limit de consulta atual é 7 dias, pode ser alterado)
+limit: o numero retornado da api, padrão atual 100, max 500 (parametros podem ser alterados)
+ids: busca varios ids de uma vez padrão do paremetro 1,2,3,4,5.
+
+-> caso não exista o parametro ids o serviço considerara uma consulta em lote, retornando os dados de acordo com os outros parametros com limite de 500 mensagens e fornecendo o paramentro nextUtc, usado para pegar outro lote dos mesmo paramentros com novas informações.
+
+-> caso seja fornecido o parametro ids será feito uma busca individual para cara um dos ids, sendo retornado apenas uma lista contendo os objetos encontrados.
+
+obs: o serviço já implementa a logica de verificar se os ultimos resultado fornecidos possuem a mesma data, assim excluindo esses e devolvendo no proximo lote.
+
+```
+
 ## ORBCOMM
 
 ```bash
