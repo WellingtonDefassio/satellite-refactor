@@ -36,8 +36,19 @@ export class SatelliteService {
 
       if (!findManySendedMessages.length) return findManySendedMessages;
 
-      const validatedMessages: SatelliteSendedMessages[] = this.applyAdjustment(
+      const orderedList = this.orderMessagesByDate(
         findManySendedMessages,
+        'createdAt',
+      );
+
+      const correctList = this.deleteLastDateIfDuplicate(
+        orderedList,
+        'createdAt',
+        limit,
+      );
+
+      const validatedMessages: SatelliteSendedMessages[] = this.applyAdjustment(
+        correctList,
         'createdAt',
         limit,
       );
@@ -104,8 +115,8 @@ export class SatelliteService {
     return messagesWithoutDuplicates;
   }
 
-  private orderMessagesByDate(downloadMessagesList: any[], param: string) {
-    const result = [...downloadMessagesList].sort(
+  private orderMessagesByDate(list: any[], param: string) {
+    const result = [...list].sort(
       (data, data2) => data[param].getTime() - data2[param].getTime(),
     );
     return result;
