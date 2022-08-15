@@ -71,7 +71,7 @@ export class SatelliteService {
     const emittedMessages = await this.prisma.satelliteEmittedMessages.findMany(
       {
         where: {
-          device,
+          deviceId: device,
           dateUtc: { gt: startDate },
           messageSize: { gt: messageSize },
         },

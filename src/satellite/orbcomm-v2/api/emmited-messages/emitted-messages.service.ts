@@ -76,7 +76,7 @@ export class EmittedMessagesServices {
       return await this.prisma.satelliteEmittedMessages.create({
         data: {
           payload: Buffer.of(...message.RawPayload).toString('hex'),
-          device: message.MobileID,
+          deviceId: message.MobileID,
           messageSize: message.OTAMessageSize,
           dateUtc: new Date(message.MessageUTC + 'Z'),
           satelliteSpecificValues: {

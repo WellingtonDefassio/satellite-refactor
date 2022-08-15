@@ -10,92 +10,85 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
 model SatelliteServices {
-  id             Int              @id @default(autoincrement())
-  name           String           @unique
-  createdAt      DateTime                  @default(now())
-  devices        Devices[]
-  sendSpecific       SatelliteSendedSpecificAttributes[]
+  id              Int                                  @id @default(autoincrement())
+  name            String                               @unique
+  createdAt       DateTime                             @default(now())
+  devices         Devices[]
+  sendSpecific    SatelliteSendedSpecificAttributes[]
   emittedSpecific SatelliteEmittedSpecificAttributes[]
 }
 
 model Devices {
-  id               Int                       @id @default(autoincrement())
-  deviceId         String                    @unique
-  createdAt      DateTime                  @default(now())
-  status         DeviceStatus @default(ACTIVE)
-  satelliteServiceName String
-  satelliteService SatelliteServices @relation(fields: [satelliteServiceName], references: [name])
+  id                      Int                       @id @default(autoincrement())
+  deviceId                String                    @unique
+  createdAt               DateTime                  @default(now())
+  status                  DeviceStatus              @default(ACTIVE)
+  satelliteServiceName    String
+  satelliteService        SatelliteServices         @relation(fields: [satelliteServiceName], references: [name])
   satelliteSendedMessages SatelliteSendedMessages[]
 }
 
 model SatelliteSendedMessages {
-  id                     Int                      @id @default(autoincrement())
-  payload                String                   @db.MediumText
-  status                 MessageStatus            @default(CREATED)
-  createdAt              DateTime               @db.DateTime(0)  @default(now())
-  deviceId               String
-  device                 Devices                  @relation(fields: [deviceId], references: [deviceId])
+  id                      Int                             @id @default(autoincrement())
+  payload                 String                          @db.MediumText
+  status                  MessageStatus                   @default(CREATED)
+  createdAt               DateTime                        @default(now()) @db.DateTime(0)
+  deviceId                String
+  device                  Devices                         @relation(fields: [deviceId], references: [deviceId])
   satelliteSpecificValues SatelliteSendedSpecificValues[]
-
 }
 
 model SatelliteSendedSpecificAttributes {
-  id        Int              @id @default(autoincrement())
-  attribute      String           
-  createdAt      DateTime                  @default(now())
-  satelliteServiceName String
-  satelliteService SatelliteServices @relation(fields: [satelliteServiceName], references: [name])
+  id                      Int                             @id @default(autoincrement())
+  attribute               String
+  createdAt               DateTime                        @default(now())
+  satelliteServiceName    String
+  satelliteService        SatelliteServices               @relation(fields: [satelliteServiceName], references: [name])
   satelliteSpecificValues SatelliteSendedSpecificValues[]
 
-
- @@unique([attribute, satelliteServiceName])
+  @@unique([attribute, satelliteServiceName])
 }
 
 model SatelliteSendedSpecificValues {
-  id          Int                     @id @default(autoincrement())
-  value       String 
-  sendedMessageId Int
-  sendedMessage SatelliteSendedMessages @relation(fields: [sendedMessageId], references: [id])
-  attributeName String
+  id                   Int                               @id @default(autoincrement())
+  value                String
+  sendedMessageId      Int
+  sendedMessage        SatelliteSendedMessages           @relation(fields: [sendedMessageId], references: [id])
+  attributeName        String
   satelliteServiceName String
-  sendedAttribute SatelliteSendedSpecificAttributes @relation(fields: [attributeName, satelliteServiceName], references: [attribute, satelliteServiceName])
+  sendedAttribute      SatelliteSendedSpecificAttributes @relation(fields: [attributeName, satelliteServiceName], references: [attribute, satelliteServiceName])
 
   @@unique([sendedMessageId, attributeName, satelliteServiceName])
-
 }
 
 model SatelliteEmittedMessages {
-  id             Int      @id @default(autoincrement())
-  payload        String @db.MediumText
-  device         String
-  messageSize           Int
-  dateUtc        DateTime
+  id                      Int                              @id @default(autoincrement())
+  payload                 String                           @db.MediumText
+  deviceId                String
+  messageSize             Int
+  dateUtc                 DateTime
   satelliteSpecificValues SatelliteEmittedSpecificValues[]
-  
 }
 
 model SatelliteEmittedSpecificAttributes {
-  id             Int      @id @default(autoincrement())
-  attribute      String           
-  createdAt      DateTime                  @default(now())
+  id                   Int                              @id @default(autoincrement())
+  attribute            String
+  createdAt            DateTime                         @default(now())
   satelliteServiceName String
-  satelliteService SatelliteServices @relation(fields: [satelliteServiceName], references: [name])
-  satelliteAttributes SatelliteEmittedSpecificValues[]
+  satelliteService     SatelliteServices                @relation(fields: [satelliteServiceName], references: [name])
+  satelliteAttributes  SatelliteEmittedSpecificValues[]
 
   @@unique([attribute, satelliteServiceName])
-
 }
 
 model SatelliteEmittedSpecificValues {
-  id Int @id @default(autoincrement())
-  value       String 
-  emittedMessageId Int
-  emittedMessage SatelliteEmittedMessages @relation(fields: [emittedMessageId], references: [id])
+  id                        Int                                @id @default(autoincrement())
+  value                     String
+  emittedMessageId          Int
+  emittedMessage            SatelliteEmittedMessages           @relation(fields: [emittedMessageId], references: [id])
   emittedMessageAttributeId Int
-  emittedAttribute SatelliteEmittedSpecificAttributes @relation(fields: [emittedMessageAttributeId], references: [id])
-
+  emittedAttribute          SatelliteEmittedSpecificAttributes @relation(fields: [emittedMessageAttributeId], references: [id])
 }
 
 model OrbcommDownloadParamControl {
@@ -116,7 +109,7 @@ model OrbcommMobileVersion {
 
 model OrbcommLogError {
   id          Int      @id @default(autoincrement())
-  service String
+  service     String
   description String   @db.MediumText
   createdAt   DateTime @default(now())
 }
@@ -134,4 +127,3 @@ enum DeviceStatus {
   ACTIVE
   DISABLED
 }
-
