@@ -74,6 +74,20 @@ Nest is [MIT licensed](LICENSE).
 
 # SERVIÇOS
 
+## SATELLITE
+
+``bash
+
+### CREATE-SEND-MESSAGES
+
+serviço responsavel por criar uma mensagem no banco de dados.
+
+fluxo:
+-> é recebido via controller um body contendo um deviceId, payload, e um objeto device: que contem id deviceId e status.
+-> esta mensagem é persistida no banco e vinculado a um device pré existente na tabela device, IMPORTANTE!! é esperado que a tabela device seja fornecido por outro serviço, no momento foi criado uma tabela para o mesmo.
+-> obs: todas as mensagens cadastradas recebem como padrão o status CREATED, para que seja recebida por outros serviços.
+´´´
+
 ## ORBCOMM
 
 ```bash
