@@ -104,8 +104,8 @@ export class CheckMessagesStatusService {
     const fwIDs = formattedData.map((message) => message.fwrdIdValue);
 
     const messageBodyCheck: MessageBodyCheck = {
-      access_id: '70002657',
-      password: 'ZFLLYNJL',
+      access_id: process.env.ACCESS_ID,
+      password: process.env.PASSWORD,
       fwIDs: String(fwIDs),
     };
 

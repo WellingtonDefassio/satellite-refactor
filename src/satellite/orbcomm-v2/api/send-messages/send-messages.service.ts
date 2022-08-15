@@ -55,8 +55,8 @@ export class SendMessagesService {
     messagesCreated: SatelliteSendedMessages[],
   ): MessageBodyPost {
     const messageBodyPost: MessageBodyPost = {
-      access_id: '70002657',
-      password: 'ZFLLYNJL',
+      access_id: process.env.ACCESS_ID,
+      password: process.env.PASSWORD,
       messages: [],
     };
 

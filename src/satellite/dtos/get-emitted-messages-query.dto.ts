@@ -10,7 +10,6 @@ export class FindEmittedMessagesDto {
   @IsNumber()
   @Max(500)
   @Transform((param) => {
-    console.log(param);
     return parseInt(param.value);
   })
   limit?: number = 100;
