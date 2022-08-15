@@ -76,6 +76,7 @@ Nest is [MIT licensed](LICENSE).
 
 ## ORBCOMM
 
+```bash
 ### EMITTED-MESSAGES
 
 serviço responsável por capturar todas as mensagens emitidas pelos aparelhos que usam o serviço da orbcomm.
@@ -96,6 +97,8 @@ fluxo:
 -> em caso de erros é persistido na tabela LogError 'usado apenas para o serviço da orbcomm' a mensagem do erro, e o serviço 'EMITTED_MESSAGES'
 
 realizado teste de integração.
+
+```
 
 ### SEND-MESSAGES
 
