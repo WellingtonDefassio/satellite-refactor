@@ -11,7 +11,7 @@ import {
 export class EmittedMessagesServices {
   constructor(private prisma: PrismaService, private http: HttpService) {}
 
-  @Cron(CronExpression.EVERY_30_SECONDS)
+  @Cron(CronExpression.EVERY_5_MINUTES)
   async downloadMessages() {
     console.log('DOWNLOAD MESSAGES START...');
 

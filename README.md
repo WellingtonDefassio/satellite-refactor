@@ -71,3 +71,24 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 ## License
 
 Nest is [MIT licensed](LICENSE).
+
+# SERVIÇOS
+
+## ORBCOMM
+
+### EMITTED-MESSAGES
+
+serviço responsável por capturar todas as mensagens emitidas pelos aparelhos que usam o serviço da orbcomm.
+
+fluxo:
+-> é obtido o ultimo registro na tabela orbcommDownloadParamControl coluna nextMessage, parametro usado para consulta na api do cliente.
+-> é realizada uma chamada na api do cliente onde o parametro nextMessage é enviado, em resposta é espero o retorno das 500 proximas mensagens emitidas e o parametro nextMessage e um parametro ErrorID = 0;
+-> é validado a resposta da api do cliente e caso seja diferente da esperada é lançado um Erro.
+-> é chamado o metodo createManyMessages, este irá criar na tabela Satellites um registro para cada mensagem, e 8 registros na tabela especificos já que para cada mensagem da orbcomm é devolvido 8 valores espeficos do serviço!
+-> dentro do metodo upsertMobileVersion é realizado um filtro no retorno da api que mantem apenas as mensagens com o atributo 'Payload', este é usado para atualizar as versoes do equipamentos, atualiza valores existentes e cria caso não exista, chave unica de referencia 'DeviceID'
+-> após é chamado o createNextUtcParam que é responsavel por persistir a proxima nextMessage que será chamada na proxima execução do serviço.
+-> em caso de erros é persistido na tabela LogError 'usado apenas para o serviço da orbcomm' a mensagem do erro, e o serviço 'EMITTED_MESSAGES'
+
+realizado teste de integração.
+
+### SEND-MESSAGES
