@@ -105,6 +105,25 @@ ids: busca varios ids de uma vez padrão do paremetro 1,2,3,4,5.
 
 -> caso seja fornecido o parametro ids será feito uma busca individual para cara um dos ids, sendo retornado apenas uma lista contendo os objetos encontrados.
 
+
+```
+
+```bash
+
+### GET-EMITTED-MESSAGES
+
+fluxo:
+-> é recebido via controller os possiveis parametros (limit, device, startDate, messageSize)
+
+limit: o numero retornado da api, padrão atual 100, max 500 (parametros podem ser alterados)
+startDate: data inicial da consulta. (data limit de consulta atual é 7 dias, pode ser alterado)
+deviceId: busca pelo mensagens de um device especifico.
+messageSize: representa o valor minimo do message size a ser encontrado.
+
+-> caso não seja encontrado uma mensagem com os parametros informador é retornado um array vazio.
+
+-> caso seja encontrado é feito o tratamento das mensagens e retornado via body.
+
 obs: o serviço já implementa a logica de verificar se os ultimos resultado fornecidos possuem a mesma data, assim excluindo esses e devolvendo no proximo lote.
 
 ```
