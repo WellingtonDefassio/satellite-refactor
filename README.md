@@ -100,6 +100,8 @@ realizado teste de integração.
 
 ```
 
+```bash
+
 ### SEND-MESSAGES
 
 serviço responsavel por coletar mensagens destinadas a um device e enviar para a api da orbcomm.
@@ -117,6 +119,10 @@ fluxo:
 
 -> em caso de erros é persistido na tabela LogError 'usado apenas para o serviço da orbcomm' a mensagem do erro, e o serviço 'SEND_MESSAGES'
 
+```
+
+```bash
+
 ### CHECK-MESSAGES
 
 serviço responsavel por verificar o status da mensagem enviada ao serviço de satellite orbcomm, até a resposta do mesmo.
@@ -132,3 +138,5 @@ serviço responsavel por verificar o status da mensagem enviada ao serviço de s
 -> com o retorno correto da api é chamado o metodo addIdInResponse ele é responsavel por pegar a lista de objetos retornado pela api identificar qual possui a propriedade ForwardMessageID igual a fwrdIdValue enviada e acrescentar o id(banco de dados) no body.
 
 -> por fim para cada mensagem retornada em que o State (codigo do status) que seja diferente de zero será atualizado no banco com seu novo status, e o valor especifico orbcomm status também será atualizado.
+
+```
