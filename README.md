@@ -107,6 +107,24 @@ está contido dentro desta classe. (criado uma issues para este.)
 
 ```
 
+```bash
+### EMITTED MESSAGES
+
+responsavel por receber os parametros via query que será chamado no serviço.
+
+fluxo:
+-> receber os parametros via query que serão validados / transformador dentro do FindEmittedMessagesDto.
+
+IMPORTANTE!!!
+hoje a logica de:
+limit de solicitações / padrão de limit,
+maximo de dias anteriores permitidos da solicitação.
+está contido dentro desta classe. (criado uma issues para este.)
+
+-> após validado dados pe chamado o service para retorno do parametro.
+
+```
+
 # SERVIÇOS
 
 ## SATELLITE
