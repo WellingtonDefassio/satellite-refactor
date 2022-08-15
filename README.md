@@ -72,6 +72,41 @@ Nest is an MIT-licensed open source project. It can grow thanks to the sponsors 
 
 Nest is [MIT licensed](LICENSE).
 
+# CONTROLLER
+
+## SATELLITE
+
+```bash
+### SEND MESSAGES @POST
+
+responsável por receber o body com a finalidade de realizar o post de uma nova mensagem
+
+fluxo:
+-> recebe um body onde deve conter um payload: string e um deviceId: string.
+-> este é recebido pelo pipe de transformação FetchDevice, caso o device exista é inserido as informações do device dentro do objeto e dado sequencia, caso o device não seja encontrado o serviço lança uma exceção.
+-> em seguida o controlador recebe os dados que é validado pelo SendMessageDto, que é feito as verificações necessarias nos tipo de dados.
+-> após validado é chamado o createSend Service com as informações do body.
+
+```
+
+```bash
+### SEND MESSAGES @GET
+
+responsavel por receber os parametros via query que será chamado no serviço.
+
+fluxo:
+-> receber os parametros via query que serão validados / transformador dentro do FindSendMessagesDto.
+
+IMPORTANTE!!!
+hoje a logica de:
+limit de solicitações / padrão de limit,
+maximo de dias anteriores permitidos da solicitação.
+está contido dentro desta classe. (criado uma issues para este.)
+
+-> após validado dados pe chamado o service para retorno do parametro.
+
+```
+
 # SERVIÇOS
 
 ## SATELLITE
